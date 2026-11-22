@@ -52,9 +52,9 @@ export default function OwnerDashboard() {
               <div className="table-row listing-row" key={l.id}>
                 <span className="listing-cell"><img src={l.images[0]} alt="" /><span><strong>{l.title}</strong><small>{l.city} · {l.type}</small></span></span>
                 <span><strong>{shortMoney(l.price)}</strong><small>{l.sale ? 'vente' : '/ mois'} · garantie {GUARANTEE_MONTHS} mois</small></span>
-                <span className={`status-pill ${l.status === 'approved' ? 'confirmed' : l.status === 'reserved' ? 'pending' : l.status === 'rented' ? 'declined' : 'pending'}`}>
+                <span className={`status-pill ${l.status === 'approved' ? 'confirmed' : l.status === 'reserved' ? 'pending' : l.status === 'rented' || l.status === 'suspended' ? 'declined' : 'pending'}`}>
                   {l.status === 'approved' ? <Check size={13} /> : l.status === 'reserved' ? <Clock size={13} /> : <Eye size={13} />}
-                  {l.status === 'approved' ? 'En ligne' : l.status === 'pending' ? 'En validation' : l.status === 'reserved' ? 'Réservé' : 'Loué'}
+                  {l.status === 'approved' ? 'En ligne' : l.status === 'pending' ? 'En validation' : l.status === 'reserved' ? 'Réservé' : l.status === 'suspended' ? 'Suspendue' : 'Loué'}
                 </span>
                 <span className="row-actions">
                   <Link to={`/annonce/${l.id}`} className="icon-btn" title="Voir"><Eye size={16} /></Link>

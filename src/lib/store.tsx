@@ -205,6 +205,8 @@ interface StoreValue extends Persisted {
   markThreadRead: (listingId: string, otherId: string) => void
   /** Demande d'accès diaspora transmise à l'agence (aucun document téléversé). */
   submitDiasporaRequest: (input: Omit<DiasporaRequest, 'id' | 'createdAt' | 'status'>) => DiasporaRequest
+  /** Transmission simulée d'une demande diaspora à l'agence (démo, aucun secret). */
+  forwardDiasporaRequest: (id: string) => void
   /** Transactions simulées : aucune écriture bancaire ni secret de paiement. */
   startTransaction: (listingId: string) => Transaction | null
   advanceTransactionStep: (id: string) => void
@@ -338,8 +340,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
             approved: 'approuvée et mise en ligne',
             reserved: 'réservée',
             rented: 'marquée comme louée',
+            suspended: 'suspendue et retirée des recherches',
           }
-          const kind = status === 'approved' ? 'success' : status === 'pending' ? 'warning' : 'info'
+          const kind = status === 'approved' ? 'success' : status === 'pending' || status === 'suspended' ? 'warning' : 'info'
           next = notifyState(next, listing.ownerId, 'Statut de votre annonce', `« ${listing.title} » est ${labels[status]}.`, kind, '/proprietaire#annonces')
         }
         return next
@@ -484,6 +487,24 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return request
     }
 
+    const forwardDiasporaRequest = (id: string) => {
+      setState((s) => {
+        const request = s.diasporaRequests.find((d) => d.id === id)
+        if (!request || request.status === 'forwarded') return s
+        let next: Persisted = {
+          ...s,
+          diasporaRequests: s.diasporaRequests.map((d) => d.id === id ? { ...d, status: 'forwarded' } : d),
+        }
+        const agency = s.users.find((u) => u.role === 'agency')
+        if (agency) {
+          next = notifyState(next, agency.id, 'Projet diaspora transmis',
+            `La demande de ${request.name} pour ${request.city} vous a été transmise par l'administration (démo).`,
+            'warning', '/agence#diaspora')
+        }
+        return next
+      })
+    }
+
     const startTransaction = (listingId: string): Transaction | null => {
       const listing = state.listings.find((l) => l.id === listingId)
       if (!currentUser || currentUser.role !== 'client' || !listing || listing.sale || listing.status === 'rented') return null
@@ -561,7 +582,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       register, login, demoLogin, logout, addListing, setListingStatus,
       toggleFavorite, addVisit, setVisitStatus, addContract, addMovingPlan, toggleMovingStep,
       notify, markAllRead, sendMessage, markThreadRead,
-      submitDiasporaRequest, startTransaction, advanceTransactionStep,
+      submitDiasporaRequest, forwardDiasporaRequest, startTransaction, advanceTransactionStep,
     }
   }, [state, geo, requestLocation, clearLocation, sortedListings])
 

@@ -1,6 +1,6 @@
 export type Role = 'client' | 'owner' | 'agency'
 export type PropertyType = 'Appartement' | 'Maison' | 'Studio' | 'Villa' | 'Terrain'
-export type ListingStatus = 'pending' | 'approved' | 'reserved' | 'rented'
+export type ListingStatus = 'pending' | 'approved' | 'reserved' | 'rented' | 'suspended'
 
 export interface User {
   id: string
@@ -127,7 +127,7 @@ export interface DiasporaRequest {
   project: string
   whatsapp: string
   email: string
-  status: 'received'
+  status: 'received' | 'forwarded'
   createdAt: string
 }
 

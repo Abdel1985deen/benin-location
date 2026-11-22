@@ -23,6 +23,7 @@ export default function PropertyCard({
           <span className="badge badge-primary">{listing.sale ? 'À vendre' : 'À louer'}</span>
           {listing.status === 'reserved' && <span className="badge badge-warn">Réservé</span>}
           {listing.status === 'pending' && <span className="badge badge-muted">En validation</span>}
+          {listing.status === 'suspended' && <span className="badge badge-warn">Suspendue</span>}
         </div>
         <button
           className={`fav-btn ${isFav ? 'active' : ''}`}

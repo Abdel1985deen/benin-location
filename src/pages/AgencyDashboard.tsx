@@ -127,7 +127,7 @@ export default function AgencyDashboard() {
                 <span><strong>{d.name}</strong><small>{d.project} · {d.city}</small></span>
                 <span><strong>{d.whatsapp}</strong><small>{d.email} · {d.country}</small></span>
                 <span><strong>{d.budget}</strong></span>
-                <span><strong>{dateFR(d.createdAt)}</strong><small>Nouveau</small></span>
+                <span><strong>{dateFR(d.createdAt)}</strong><small>{d.status === 'forwarded' ? 'Transmise par l’admin' : 'Nouveau'}</small></span>
               </div>
             ))}
           </div>
