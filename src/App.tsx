@@ -83,7 +83,7 @@ export default function App() {
     <>
       <ScrollToTop />
       <Routes>
-        <Route path="/connexion" element={<Auth />} />
+        <Route path="/connexion" element={<div className="route-fade"><Auth /></div>} />
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/annonces" element={<Explore />} />

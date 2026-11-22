@@ -64,10 +64,23 @@ function mapSvg(withCities) {
   const d = clean(path(benin))
   const [[x0], [x1]] = path.bounds(benin)
 
+  // Animation des points de géolocalisation : uniquement opacity + transform (scale).
+  const pulseStyle = withCities
+    ? `    <style>
+      .pin-pulse { transform-box: fill-box; transform-origin: center; animation: pin-pulse 2.8s ease-out infinite; }
+      @keyframes pin-pulse {
+        0% { opacity: .7; transform: scale(.45); }
+        70%, 100% { opacity: 0; transform: scale(2.4); }
+      }
+      @media (prefers-reduced-motion: reduce) { .pin-pulse { animation: none; opacity: 0; } }
+    </style>`
+    : ''
+
   const pins = withCities
     ? CITIES.map((city) => {
       const [x, y] = projection([city.lng, city.lat])
       return `      <g transform="translate(${round(x)} ${round(y)})">
+        <circle class="pin-pulse" cx="0" cy="-15" r="8" fill="#fff" />
         <line x1="0" y1="0" x2="${city.dx}" y2="${city.dy}" stroke="#072e28" stroke-opacity=".55" stroke-width="1" />
         <path d="${PIN_PATH}" fill="#073b34" stroke="#fff" stroke-width="1.6" stroke-linejoin="round" />
         <circle cx="0" cy="-15" r="3.1" fill="#fff" />
@@ -86,6 +99,7 @@ function mapSvg(withCities) {
       <stop offset="55%" stop-color="#fff" stop-opacity="0" />
       <stop offset="100%" stop-color="#000" stop-opacity=".14" />
     </linearGradient>
+${pulseStyle}
   </defs>
 
   <path d="${d}" fill="url(#benin-flag)" />

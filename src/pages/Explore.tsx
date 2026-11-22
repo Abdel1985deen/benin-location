@@ -1,11 +1,13 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   ArrowUpDown, Building2, Crosshair, Grid2X2, Map as MapIcon, MapPin,
   RotateCcw, ShieldCheck, SlidersHorizontal, X,
 } from 'lucide-react'
+import AdSlot from '../components/AdSlot'
 import PropertyCard from '../components/PropertyCard'
 import MapView from '../components/MapView'
+import Reveal from '../components/Reveal'
 import { cityOptions } from '../lib/data'
 import { GUARANTEE_MONTHS } from '../lib/site'
 import { useStore } from '../lib/store'
@@ -219,10 +221,20 @@ export default function Explore() {
           ) : (
             <>
               {filtered.length > 0 ? (
-                <div className="property-grid explore-grid">
-                  {filtered.map((l) => <PropertyCard key={l.id} listing={l} userPoint={point} />)}
-                </div>
+                <Reveal className="property-grid explore-grid">
+                  {filtered.map((l, i) => (
+                    <Fragment key={l.id}>
+                      <PropertyCard listing={l} userPoint={point} />
+                      {i === Math.min(2, filtered.length - 1) && <AdSlot placement="inline" />}
+                    </Fragment>
+                  ))}
+                </Reveal>
               ) : <Empty onReset={reset} />}
+              {filtered.length > 0 && (
+                <div className="ad-bottom-wrap">
+                  <AdSlot placement="bottom" />
+                </div>
+              )}
             </>
           )}
         </div>

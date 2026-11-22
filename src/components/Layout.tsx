@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import {
   ArrowRight, Bell, Building2, ChevronDown, Crosshair, Heart, LayoutDashboard, LogOut, Menu,
   MessageCircle, Search, ShieldCheck, UserRound, X,
@@ -22,6 +22,7 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
   const [userOpen, setUserOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation()
 
   const favCount = currentUser ? (favorites[currentUser.id] ?? []).length : 0
   const dashPath = currentUser?.role === 'owner' ? '/proprietaire' : currentUser?.role === 'agency' ? '/agence' : '/client'
@@ -143,7 +144,11 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
         </div>
       )}
 
-      <main>{children ?? <Outlet />}</main>
+      <main>
+        <div className="route-fade" key={location.pathname}>
+          {children ?? <Outlet />}
+        </div>
+      </main>
 
       <footer className="site-footer">
         <div className="container footer-top">

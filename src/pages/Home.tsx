@@ -5,8 +5,10 @@ import {
   Globe2, HeartHandshake, MapPin, MoveRight, Navigation, PackageCheck, Play, Search,
   ShieldCheck, Sparkles, Star, Truck, UserRoundPlus,
 } from 'lucide-react'
+import AdSlot from '../components/AdSlot'
 import BeninMap from '../components/BeninMap'
 import PropertyCard from '../components/PropertyCard'
+import Reveal from '../components/Reveal'
 import { IMG, cityOptions } from '../lib/data'
 import { LOGO_URL, SITE_NAME, SITE_TAGLINE } from '../lib/site'
 import { useStore } from '../lib/store'
@@ -154,53 +156,58 @@ export default function Home() {
         </div>
       </section>
 
+      {/* PUBLICITÉ — bandeau en haut de l'accueil */}
+      <div className="container ad-top-wrap">
+        <AdSlot placement="top" featured />
+      </div>
+
       {/* VALUE STRIP */}
       <section className="value-strip">
-        <div className="container value-grid">
+        <Reveal className="container value-grid">
           <div><ShieldCheck size={22} /><span><strong>Annonces vérifiées</strong><small>Contrôle qualité par l'agence</small></span></div>
           <div><Compass size={22} /><span><strong>Visite virtuelle</strong><small>Explorez avant de vous déplacer</small></span></div>
           <div><FileSignature size={22} /><span><strong>Contrat en ligne</strong><small>Signature électronique sécurisée</small></span></div>
           <div><Truck size={22} /><span><strong>Déménagement inclus</strong><small>Jusqu'à l'aménagement final</small></span></div>
-        </div>
+        </Reveal>
       </section>
 
       {/* FEATURED */}
       <section className="section" id="annonces-populaires">
         <div className="container">
-          <div className="section-head">
+          <Reveal className="section-head">
             <div>
               <span className="section-kicker"><Sparkles size={14} /> Sélection du moment</span>
               <h2>Des biens à découvrir<br />près de chez vous</h2>
             </div>
             <Link to="/annonces" className="btn btn-outline">Voir toutes les annonces <ArrowRight size={16} /></Link>
-          </div>
-          <div className="property-grid">
+          </Reveal>
+          <Reveal className="property-grid" delay={80}>
             {featured.map((l) => <PropertyCard key={l.id} listing={l} userPoint={geoPoint} />)}
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* TERRAINS À ACHETER */}
       <section className="section section-tint" id="terrains">
         <div className="container">
-          <div className="section-head">
+          <Reveal className="section-head">
             <div>
               <span className="section-kicker"><Building2 size={14} /> Nouvelle rubrique</span>
               <h2>Terrains à acheter<br />partout au Bénin</h2>
               <p>Parcelles viabilisées, titres fonciers et emplacements à fort potentiel, triés selon votre position.</p>
             </div>
             <Link to="/terrains" className="btn btn-primary">Voir tous les terrains <ArrowRight size={16} /></Link>
-          </div>
-          <div className="property-grid">
+          </Reveal>
+          <Reveal className="property-grid" delay={80}>
             {lands.map((l) => <PropertyCard key={l.id} listing={l} userPoint={geoPoint} />)}
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* GEO BAND */}
       <section className="geo-band">
         <div className="container geo-band-grid">
-          <div className="geo-copy">
+          <Reveal className="geo-copy">
             <span className="section-kicker light"><MapPin size={14} /> Géolocalisation intelligente</span>
             <h2>Votre emplacement devient<br />votre meilleur critère de recherche.</h2>
             <p>
@@ -215,8 +222,8 @@ export default function Home() {
             <button className="btn btn-accent" onClick={nearMe}>
               <Navigation size={17} /> Découvrir les biens autour de moi
             </button>
-          </div>
-          <div className="geo-visual">
+          </Reveal>
+          <Reveal className="geo-visual" delay={100}>
             <div className="geo-radar">
               <span className="radar-ring r1" /><span className="radar-ring r2" /><span className="radar-ring r3" />
               <span className="radar-center"><MapPin size={22} /></span>
@@ -229,21 +236,21 @@ export default function Home() {
               <div><small>Autour de vous</small><strong>6 biens disponibles</strong></div>
               <span className="geo-result-distance">2,4 km</span>
             </div>
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* HOW IT WORKS */}
       <section className="section" id="fonctionnement">
         <div className="container">
-          <div className="section-head center">
+          <Reveal className="section-head center">
             <div>
               <span className="section-kicker"><Compass size={14} /> Parcours simplifié</span>
               <h2>De la recherche aux clés,<br />une seule application.</h2>
               <p>Quatre étapes claires, zéro paperasse inutile.</p>
             </div>
-          </div>
-          <div className="steps-grid">
+          </Reveal>
+          <Reveal className="steps-grid" delay={80}>
             {[
               { n: '01', icon: UserRoundPlus, title: 'Créez votre compte', text: 'Client, propriétaire ou agence : chaque espace est pensé pour votre rôle.' },
               { n: '02', icon: Play, title: 'Explorez et visitez', text: 'Filtrez, géolocalisez, explorez la visite virtuelle puis planifiez une visite réelle.' },
@@ -257,13 +264,13 @@ export default function Home() {
                 <p>{s.text}</p>
               </div>
             ))}
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* TWO AUDIENCES */}
       <section className="section section-tint">
-        <div className="container audience-grid">
+        <Reveal className="container audience-grid">
           <div className="audience-card audience-owner">
             <span className="audience-icon"><Building2 size={24} /></span>
             <span className="section-kicker">Pour les propriétaires</span>
@@ -290,14 +297,14 @@ export default function Home() {
             <Link to="/connexion?role=agency" className="btn btn-dark">Accéder à l'espace agence <MoveRight size={16} /></Link>
             <img src={IMG.office} alt="Espace de travail de l'agence" className="audience-img" />
           </div>
-        </div>
+        </Reveal>
       </section>
 
       {/* TESTIMONIALS */}
       <section className="section">
         <div className="container">
-          <div className="section-head center"><div><span className="section-kicker">Clients satisfaits</span><h2>Des histoires de chez-vous.</h2><p>Des visages, des parcours réussis partout au Bénin.</p></div></div>
-          <div className="testimonial-grid">
+          <Reveal className="section-head center"><div><span className="section-kicker">Clients satisfaits</span><h2>Des histoires de chez-vous.</h2><p>Des visages, des parcours réussis partout au Bénin.</p></div></Reveal>
+          <Reveal className="testimonial-grid" delay={80}>
             {people.map((person, i) => (
               <div className="testimonial" key={person.name}>
                 <div className="stars">{Array.from({ length: 5 }).map((_, j) => <Star key={j} size={14} fill="currentColor" />)}</div>
@@ -312,13 +319,13 @@ export default function Home() {
                 </div>
               </div>
             ))}
-          </div>
+          </Reveal>
         </div>
       </section>
 
       {/* DIASPORA */}
       <section className="diaspora-cta">
-        <div className="container diaspora-inner">
+        <Reveal className="container diaspora-inner">
           <div className="diaspora-copy">
             <span className="section-kicker"><Globe2 size={14} /> Vous êtes hors du Bénin ?</span>
             <h2>Achetez un terrain et construisez en toute confiance.</h2>
@@ -334,12 +341,17 @@ export default function Home() {
             <img src={IMG.land1} alt="Parcelles de terrain au pied de l’Atacora au Bénin" loading="lazy" />
             <div className="diaspora-photo-badge"><Globe2 size={18} /> Projet suivi par l’agence</div>
           </div>
-        </div>
+        </Reveal>
       </section>
+
+      {/* PUBLICITÉ — bloc en bas */}
+      <div className="container ad-bottom-wrap">
+        <AdSlot placement="bottom" />
+      </div>
 
       {/* FINAL CTA */}
       <section className="final-cta">
-        <div className="container final-cta-inner">
+        <Reveal className="container final-cta-inner">
           <div>
             <span className="section-kicker light"><Sparkles size={14} /> Prêt à commencer ?</span>
             <h2>Votre prochain chez-vous<br />vous attend au Bénin.</h2>
@@ -350,7 +362,7 @@ export default function Home() {
             <Link to="/annonces" className="btn btn-ghost-light btn-lg">Explorer les annonces <ChevronRight size={18} /></Link>
           </div>
           <img src={IMG.city} alt="Vue de Cotonou" className="final-cta-bg" />
-        </div>
+        </Reveal>
       </section>
     </>
   )
