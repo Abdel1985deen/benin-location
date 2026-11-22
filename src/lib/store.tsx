@@ -176,7 +176,14 @@ function load(): Persisted {
 }
 
 type RegisterInput = Omit<User, 'id' | 'createdAt'>
-type ListingInput = Pick<Listing, 'title' | 'type' | 'city' | 'neighborhood' | 'address' | 'price' | 'sale' | 'surface' | 'rooms' | 'bathrooms' | 'description' | 'amenities' | 'lat' | 'lng' | 'availableFrom' | 'images'> & { furnished?: boolean }
+export type ListingInput = Pick<Listing, 'title' | 'type' | 'city' | 'neighborhood' | 'address' | 'price' | 'sale' | 'surface' | 'rooms' | 'bathrooms' | 'description' | 'amenities' | 'lat' | 'lng' | 'availableFrom' | 'images'> & { furnished?: boolean }
+/** Création ou modification d'une annonce depuis la console admin (démo). */
+export type AdminListingInput = ListingInput & {
+  id?: string
+  ownerId?: string
+  status?: ListingStatus
+  featured?: boolean
+}
 
 interface StoreValue extends Persisted {
   currentUser: User | null
@@ -192,6 +199,9 @@ interface StoreValue extends Persisted {
   demoLogin: (role: Role) => void
   logout: () => void
   addListing: (input: ListingInput) => Listing
+  /** Édition complète des annonces depuis l'admin (création si aucun id). */
+  upsertListing: (input: AdminListingInput) => Listing
+  deleteListing: (id: string) => void
   setListingStatus: (id: string, status: ListingStatus) => void
   toggleFavorite: (id: string) => void
   addVisit: (input: Omit<VisitRequest, 'id' | 'createdAt' | 'status'>) => void
@@ -218,7 +228,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<Persisted>(load)
 
   useEffect(() => {
-    localStorage.setItem(KEY, JSON.stringify(state))
+    try {
+      localStorage.setItem(KEY, JSON.stringify(state))
+    } catch {
+      // Le stockage du navigateur peut être plein après l'import de photos :
+      // l'application reste utilisable, seules les données ne sont pas conservées.
+      console.warn('Stockage local plein : les dernières modifications ne survivront pas au rechargement.')
+    }
   }, [state])
 
   // Géolocalisation : demande automatique au premier chargement, avec mémorisation du refus.
@@ -329,6 +345,35 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       })
       return listing
     }
+
+    const upsertListing = (input: AdminListingInput) => {
+      const existing = input.id ? state.listings.find((l) => l.id === input.id) : undefined
+      const listing: Listing = {
+        ...input,
+        id: existing?.id ?? uid('l'),
+        panorama: input.images[0] ?? existing?.panorama ?? '',
+        ownerId: input.ownerId ?? existing?.ownerId ?? 'u-owner',
+        status: input.status ?? existing?.status ?? 'approved',
+        featured: input.featured ?? existing?.featured ?? false,
+        createdAt: existing?.createdAt ?? new Date().toISOString(),
+      }
+      setState((s) => ({
+        ...s,
+        listings: existing
+          ? s.listings.map((l) => l.id === listing.id ? listing : l)
+          : [listing, ...s.listings],
+      }))
+      return listing
+    }
+
+    const deleteListing = (id: string) =>
+      setState((s) => ({
+        ...s,
+        listings: s.listings.filter((l) => l.id !== id),
+        favorites: Object.fromEntries(
+          Object.entries(s.favorites).map(([userId, ids]) => [userId, ids.filter((x) => x !== id)]),
+        ),
+      }))
 
     const setListingStatus = (id: string, status: ListingStatus) =>
       setState((s) => {
@@ -579,7 +624,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       requestLocation,
       clearLocation,
       sortedListings,
-      register, login, demoLogin, logout, addListing, setListingStatus,
+      register, login, demoLogin, logout, addListing, upsertListing, deleteListing, setListingStatus,
       toggleFavorite, addVisit, setVisitStatus, addContract, addMovingPlan, toggleMovingStep,
       notify, markAllRead, sendMessage, markThreadRead,
       submitDiasporaRequest, forwardDiasporaRequest, startTransaction, advanceTransactionStep,

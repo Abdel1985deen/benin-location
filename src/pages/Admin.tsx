@@ -1,13 +1,15 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  Ban, Building2, Check, CheckCircle2, Clock, Globe2, Home, Info, Receipt,
-  Send, ShieldCheck, Users, Wallet,
+  Ban, Building2, Check, CheckCircle2, Clock, Download, Globe2, Home, Info, Pencil, Plus, Receipt,
+  Send, ShieldCheck, Trash2, Users, Wallet, X,
 } from 'lucide-react'
+import AdminListingEditor from '../components/AdminListingEditor'
 import { GUARANTEE_MONTHS } from '../lib/site'
-import { useStore } from '../lib/store'
+import { useStore, type AdminListingInput } from '../lib/store'
 import { FEE_RULES, STATUS_LABELS, transactionBreakdown } from '../lib/transactions'
 import { dateFR, money, shortMoney } from '../lib/utils'
-import type { ListingStatus, User } from '../types'
+import type { Listing, ListingStatus, User } from '../types'
 
 const LISTING_LABELS: Record<ListingStatus, string> = {
   pending: 'En validation',
@@ -54,11 +56,45 @@ function UserGroup({ title, icon: Icon, people, listingCount }: {
  * Accès libre par conception : aucune authentification, aucun identifiant ni secret n'est stocké ici.
  */
 export default function Admin() {
-  const { users, listings, transactions, diasporaRequests, setListingStatus, forwardDiasporaRequest } = useStore()
+  const {
+    users, listings, transactions, diasporaRequests,
+    setListingStatus, forwardDiasporaRequest, upsertListing, deleteListing,
+  } = useStore()
+  const [editing, setEditing] = useState<Listing | 'new' | null>(null)
+  const [notice, setNotice] = useState('')
 
   const clients = users.filter((u) => u.role === 'client')
   const owners = users.filter((u) => u.role === 'owner')
   const agencies = users.filter((u) => u.role === 'agency')
+
+  const flash = (message: string) => {
+    setNotice(message)
+    window.setTimeout(() => setNotice(''), 6000)
+  }
+
+  const saveListing = (input: AdminListingInput) => {
+    const saved = upsertListing(input)
+    setEditing(null)
+    flash(`« ${saved.title} » enregistrée${saved.status === 'approved' ? ' et visible sur le site' : ''}.`)
+  }
+
+  const removeListing = (listing: Listing) => {
+    if (!window.confirm(`Supprimer définitivement « ${listing.title} » ?`)) return
+    deleteListing(listing.id)
+    if (editing && editing !== 'new' && editing.id === listing.id) setEditing(null)
+    flash(`« ${listing.title} » supprimée.`)
+  }
+
+  const exportListings = () => {
+    const blob = new Blob([JSON.stringify(listings, null, 2)], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'alloca-benin-annonces.json'
+    link.click()
+    URL.revokeObjectURL(url)
+    flash(`${listings.length} annonce(s) exportée(s) en JSON.`)
+  }
 
   const totals = transactions.reduce((acc, t) => {
     const b = transactionBreakdown(t.rent, t.monthsAdvance)
@@ -113,9 +149,32 @@ export default function Admin() {
           <div className="dash-section-head">
             <div>
               <h2>Annonces</h2>
-              <p>{listings.filter((l) => l.status === 'pending').length} en validation · {listings.filter((l) => l.status === 'suspended').length} suspendue(s). Une annonce suspendue disparaît des recherches.</p>
+              <p>{listings.filter((l) => l.status === 'pending').length} en validation · {listings.filter((l) => l.status === 'suspended').length} suspendue(s). Créez, modifiez ou supprimez une annonce sans toucher au code.</p>
+            </div>
+            <div className="admin-section-actions">
+              <button className="btn btn-outline btn-sm" onClick={exportListings}><Download size={15} /> Exporter</button>
+              <button className="btn btn-primary btn-sm" onClick={() => setEditing('new')}><Plus size={15} /> Nouvelle annonce</button>
             </div>
           </div>
+
+          <p className="admin-storage-note"><Info size={14} /> Démo sans serveur : les annonces créées ici sont enregistrées dans ce navigateur et apparaissent aussitôt sur le site depuis cet appareil. Une base de données serait nécessaire pour les rendre visibles à tous les visiteurs.</p>
+
+          {notice && (
+            <div className="admin-notice" role="status">
+              <CheckCircle2 size={16} /> <span>{notice}</span>
+              <button onClick={() => setNotice('')} aria-label="Masquer le message"><X size={14} /></button>
+            </div>
+          )}
+
+          {editing && (
+            <AdminListingEditor
+              listing={editing === 'new' ? null : editing}
+              owners={owners}
+              onSave={saveListing}
+              onCancel={() => setEditing(null)}
+            />
+          )}
+
           <div className="dash-table">
             <div className="table-head admin-listing-head">
               <span>Bien</span><span>Propriétaire</span><span>Prix</span><span>Statut</span><span>Actions démo</span>
@@ -143,6 +202,8 @@ export default function Admin() {
                     disabled={l.status === 'suspended'}
                     onClick={() => setListingStatus(l.id, 'suspended')}
                   ><Ban size={14} /> Suspendre</button>
+                  <button className="btn btn-outline btn-xs" onClick={() => setEditing(l)}><Pencil size={14} /> Modifier</button>
+                  <button className="btn btn-danger btn-xs" onClick={() => removeListing(l)}><Trash2 size={14} /> Supprimer</button>
                 </span>
               </div>
             ))}
