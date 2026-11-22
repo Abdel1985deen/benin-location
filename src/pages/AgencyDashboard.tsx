@@ -5,6 +5,7 @@ import {
   ShieldCheck, Users, X,
 } from 'lucide-react'
 import DashboardShell, { agencyLinks } from '../components/DashboardShell'
+import { GUARANTEE_MONTHS } from '../lib/site'
 import { useStore } from '../lib/store'
 import { dateFR, shortMoney } from '../lib/utils'
 
@@ -53,7 +54,7 @@ export default function AgencyDashboard() {
                   <h3>{l.title}</h3>
                   <p><Eye size={14} /> {l.city} · {l.type} · {l.surface} m²</p>
                   <p><strong>{shortMoney(l.price)}</strong> {l.sale ? '' : '/ mois'}</p>
-                  <small>Publiée le {dateFR(l.createdAt)} par {users.find((u) => u.id === l.ownerId)?.name}</small>
+                  <small>Publiée le {dateFR(l.createdAt)} par {users.find((u) => u.id === l.ownerId)?.name} · garantie {GUARANTEE_MONTHS} mois</small>
                   <div className="validation-actions">
                     <Link to={`/annonce/${l.id}`} className="btn btn-outline btn-xs">Examiner</Link>
                     <button className="btn btn-success btn-xs" onClick={() => setListingStatus(l.id, 'approved')}><Check size={14} /> Approuver</button>

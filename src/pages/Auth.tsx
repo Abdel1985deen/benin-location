@@ -6,13 +6,14 @@ import {
 } from 'lucide-react'
 import { Logo } from '../components/Layout'
 import { IMG, cityOptions } from '../lib/data'
+import { SITE_NAME, SITE_TAGLINE } from '../lib/site'
 import { useStore } from '../lib/store'
 import type { Role } from '../types'
 
 const roles: { id: Role; label: string; icon: typeof UserRound; text: string }[] = [
   { id: 'client', label: 'Client', icon: UserRound, text: 'Trouver, visiter et signer' },
   { id: 'owner', label: 'Propriétaire', icon: Building2, text: 'Publier et gérer mes biens' },
-  { id: 'agency', label: 'Agence', icon: HeartHandshake, text: 'Piloter les locations' },
+  { id: 'agency', label: 'Agence immobilière', icon: HeartHandshake, text: 'Piloter les locations' },
 ]
 
 export default function Auth() {
@@ -60,7 +61,7 @@ export default function Auth() {
         <div className="auth-aside-content">
           <span className="section-kicker light"><ShieldCheck size={14} /> Espace sécurisé</span>
           <h2>Tout votre parcours immobilier, au même endroit.</h2>
-          <p>Annonces, visites, contrats et déménagement : Kado Immo vous accompagne à chaque étape, au Bénin.</p>
+          <p>{SITE_TAGLINE}. Annonces, visites, contrats et déménagement : {SITE_NAME} vous accompagne à chaque étape.</p>
           <div className="auth-features">
             <div><Check size={16} /> Annonces vérifiées par l'agence</div>
             <div><Check size={16} /> Visite virtuelle 360°</div>
@@ -79,7 +80,7 @@ export default function Auth() {
             <button className={mode === 'register' ? 'active' : ''} onClick={() => { setMode('register'); setError('') }}>Inscription</button>
           </div>
           <h1>{mode === 'login' ? 'Bon retour parmi nous 👋' : 'Créez votre compte'}</h1>
-          <p className="auth-subtitle">{mode === 'login' ? 'Connectez-vous pour accéder à votre espace.' : 'Rejoignez la communauté Kado Immo en une minute.'}</p>
+          <p className="auth-subtitle">{mode === 'login' ? 'Connectez-vous pour accéder à votre espace.' : `Rejoignez la communauté ${SITE_NAME} en une minute.`}</p>
 
           {mode === 'register' && (
             <div className="role-picker">
@@ -95,7 +96,7 @@ export default function Auth() {
             {mode === 'register' && (
               <>
                 <label><span>Nom complet</span><div className="input-icon"><UserRound size={17} /><input value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="Ex. Kofi Mensah" required /></div></label>
-                {role === 'agency' && <label><span>Nom de l'agence</span><div className="input-icon"><Building2 size={17} /><input value={form.agency} onChange={(e) => set('agency', e.target.value)} placeholder="Ex. Agence Kado" /></div></label>}
+                {role === 'agency' && <label><span>Nom de l'agence immobilière</span><div className="input-icon"><Building2 size={17} /><input value={form.agency} onChange={(e) => set('agency', e.target.value)} placeholder="Ex. Agence ALLOCA" /></div></label>}
                 <label><span>Téléphone</span><div className="input-icon"><Phone size={17} /><input value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="+229 97 00 00 00" required /></div></label>
                 <label><span>Ville</span><div className="input-icon"><MapPin size={17} /><select value={form.city} onChange={(e) => set('city', e.target.value)}>{cityOptions.map((c) => <option key={c}>{c}</option>)}</select></div></label>
               </>
@@ -111,7 +112,7 @@ export default function Auth() {
             <div className="demo-buttons">
               <button onClick={() => quickDemo('client')}><UserRound size={15} /> Client</button>
               <button onClick={() => quickDemo('owner')}><Building2 size={15} /> Propriétaire</button>
-              <button onClick={() => quickDemo('agency')}><HeartHandshake size={15} /> Agence</button>
+              <button onClick={() => quickDemo('agency')}><HeartHandshake size={15} /> Agence immobilière</button>
             </div>
             <small>Identifiants démo : client@demo.bj / proprio@demo.bj / agence@demo.bj — mot de passe <b>demo1234</b></small>
           </div>

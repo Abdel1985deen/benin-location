@@ -1,6 +1,8 @@
-# Kado Immo — application de location immobilière au Bénin 🇧🇯
+# ALLOCA BENIN — application de location immobilière au Bénin 🇧🇯
 
-Application web complète (React + TypeScript + Vite) qui met en relation **clients**, **propriétaires** et **agence de location**, avec géolocalisation, visite virtuelle 360°, contrat signé en ligne et suivi du déménagement / aménagement.
+**Louer partout au Bénin facilement et rapidement via votre position.**
+
+Application web complète (React + TypeScript + Vite) qui met en relation **clients**, **propriétaires** et **agences immobilières**, avec géolocalisation, visite virtuelle 360°, contrat signé en ligne et suivi du déménagement / aménagement.
 
 ## Démarrer
 
@@ -18,6 +20,13 @@ npm run preview
 ```
 
 > Sur Termux, les scripts utilisent directement les binaires Node (`node node_modules/...`) car le shebang `/usr/bin/env` n'existe pas dans cet environnement.
+
+## Déploiement GitHub Pages
+
+- `vite.config.ts` définit `base: '/benin-location/'` : tous les assets sont servis depuis `https://<pseudo>.github.io/benin-location/`.
+- Le routage utilise `HashRouter` (`/#/annonces`, `/#/terrains`, …) : aucune réécriture serveur n'est nécessaire.
+- Les liens dans les popups de carte utilisent également le format `#/annonce/:id`.
+- Publication : `npm run deploy` (génère `dist/` puis le publie sur la branche `gh-pages`).
 
 ## Comptes de démonstration
 
@@ -53,6 +62,12 @@ Des boutons « Client / Propriétaire / Agence » sur la page de connexion perme
 - Notifications centralisées (cloche) pour les actions clés.
 
 ### Général
+- Accueil avec **carte illustrée du Bénin aux couleurs du drapeau** (vert / jaune / rouge) et portraits de clients satisfaits (photos libres de droits).
+- **Géolocalisation demandée au visiteur** : annonces triées de la plus proche à la plus éloignée. En cas de refus, toutes les annonces restent affichées avec un message invitant à activer la position.
+- **Garantie : avance de 3 mois** affichée sur chaque annonce (fiche et cartes).
+- Option **logement meublé / non meublé** au dépôt d'annonce et dans les filtres de recherche.
+- Nouvelle rubrique **Terrains à acheter** (`/terrains`) avec sélection de parcelles et tri par distance.
+- Inscription avec type **Agence immobilière**.
 - Design responsive, identité visuelle dédiée (vert béninois, or, corail).
 - Données de démonstration ancrées dans des villes réelles : Cotonou, Abomey-Calavi, Porto-Novo, Ouidah, Bohicon, Parakou, Natitingou.
 - Persistance locale (`localStorage`) des comptes, annonces, visites, contrats, déménagements, messages et notifications.
@@ -62,10 +77,12 @@ Des boutons « Client / Propriétaire / Agence » sur la page de connexion perme
 
 ```
 src/
-  components/   Layout, PropertyCard, MapView (Leaflet), SignaturePad, DashboardShell
-  lib/          data (jeu de données + villes), store (contexte + persistance), utils
-  pages/        Home, Explore, PropertyDetail, Auth, ClientDashboard, OwnerDashboard,
-                AgencyDashboard, Publish, Contract, Moving
+  components/   Layout, BeninMap (SVG tricolore), PropertyCard, MapView (Leaflet),
+                SignaturePad, DashboardShell
+  lib/          data (jeu de données + villes), site (identité + constantes),
+                store (contexte + persistance + géolocalisation), utils
+  pages/        Home, Explore, Lands (terrains à acheter), PropertyDetail, Auth,
+                ClientDashboard, OwnerDashboard, AgencyDashboard, Publish, Contract, Moving
   styles.css    design system complet
 ```
 

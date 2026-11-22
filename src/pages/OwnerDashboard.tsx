@@ -5,6 +5,7 @@ import {
   FileSignature, Plus, TrendingUp, X, XCircle,
 } from 'lucide-react'
 import DashboardShell, { ownerLinks } from '../components/DashboardShell'
+import { GUARANTEE_MONTHS } from '../lib/site'
 import { useStore } from '../lib/store'
 import { dateFR, shortMoney } from '../lib/utils'
 
@@ -37,7 +38,7 @@ export default function OwnerDashboard() {
 
       <div className="dash-banner owner-banner">
         <span><CheckCircle2 size={22} /></span>
-        <div><strong>Vos annonces sont visibles par toute l'agence</strong><p>Kado Immo vérifie chaque annonce avant sa mise en ligne et gère les demandes pour vous.</p></div>
+        <div><strong>Vos annonces sont visibles par toute l'agence</strong><p>ALLOCA BENIN vérifie chaque annonce avant sa mise en ligne et gère les demandes pour vous.</p></div>
         <Link to="/publier" className="btn btn-accent btn-sm">Ajouter un bien <ArrowRight size={15} /></Link>
       </div>
 
@@ -49,7 +50,7 @@ export default function OwnerDashboard() {
             {mine.map((l) => (
               <div className="table-row listing-row" key={l.id}>
                 <span className="listing-cell"><img src={l.images[0]} alt="" /><span><strong>{l.title}</strong><small>{l.city} · {l.type}</small></span></span>
-                <span><strong>{shortMoney(l.price)}</strong><small>{l.sale ? 'vente' : '/ mois'}</small></span>
+                <span><strong>{shortMoney(l.price)}</strong><small>{l.sale ? 'vente' : '/ mois'} · garantie {GUARANTEE_MONTHS} mois</small></span>
                 <span className={`status-pill ${l.status === 'approved' ? 'confirmed' : l.status === 'reserved' ? 'pending' : l.status === 'rented' ? 'declined' : 'pending'}`}>
                   {l.status === 'approved' ? <Check size={13} /> : l.status === 'reserved' ? <Clock size={13} /> : <Eye size={13} />}
                   {l.status === 'approved' ? 'En ligne' : l.status === 'pending' ? 'En validation' : l.status === 'reserved' ? 'Réservé' : 'Loué'}

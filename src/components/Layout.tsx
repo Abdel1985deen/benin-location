@@ -1,22 +1,23 @@
 import { useState } from 'react'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import {
-  ArrowRight, Bell, Building2, ChevronDown, Heart, LayoutDashboard, LogOut, Menu,
+  ArrowRight, Bell, Building2, ChevronDown, Crosshair, Heart, LayoutDashboard, LogOut, Menu,
   MessageCircle, Search, ShieldCheck, UserRound, X,
 } from 'lucide-react'
+import { SITE_NAME, SITE_TAGLINE } from '../lib/site'
 import { useStore } from '../lib/store'
 
 export function Logo({ light = false }: { light?: boolean }) {
   return (
-    <Link to="/" className={`logo ${light ? 'logo-light' : ''}`} aria-label="Kado Immo, accueil">
+    <Link to="/" className={`logo ${light ? 'logo-light' : ''}`} aria-label={`${SITE_NAME}, accueil`}>
       <span className="logo-mark"><span></span><span></span><span></span></span>
-      <span className="logo-text">Kado<span>Immo</span></span>
+      <span className="logo-text">ALLOCA<span> BENIN</span></span>
     </Link>
   )
 }
 
 export default function Layout({ children }: { children?: React.ReactNode }) {
-  const { currentUser, logout, favorites, notifications, messages, markAllRead } = useStore()
+  const { currentUser, logout, favorites, notifications, messages, markAllRead, geoStatus, requestLocation } = useStore()
   const [menuOpen, setMenuOpen] = useState(false)
   const [userOpen, setUserOpen] = useState(false)
   const [notifOpen, setNotifOpen] = useState(false)
@@ -47,6 +48,7 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
           <Logo />
           <nav className={`main-nav ${menuOpen ? 'is-open' : ''}`}>
             <NavLink to="/annonces" onClick={() => setMenuOpen(false)}>Annonces</NavLink>
+            <NavLink to="/terrains" onClick={() => setMenuOpen(false)}>Terrains à acheter</NavLink>
             <NavLink to="/annonces?map=1" onClick={() => setMenuOpen(false)}>Carte</NavLink>
             <NavLink to="/#fonctionnement" onClick={() => setMenuOpen(false)}>Comment ça marche</NavLink>
             <NavLink to="/devenir-proprietaire" onClick={() => setMenuOpen(false)}>Propriétaires</NavLink>
@@ -122,20 +124,38 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
         </div>
       </header>
 
+      {(geoStatus === 'denied' || geoStatus === 'unsupported') && (
+        <div className="geo-notice" role="status">
+          <div className="container geo-notice-inner">
+            <Crosshair size={18} />
+            <p>
+              {geoStatus === 'denied'
+                ? 'Position désactivée : toutes les annonces sont affichées. Activez la géolocalisation dans votre navigateur pour les trier de la plus proche à la plus éloignée.'
+                : 'Géolocalisation indisponible sur ce navigateur : toutes les annonces sont affichées.'}
+            </p>
+            {geoStatus === 'denied' && (
+              <button className="btn btn-outline btn-sm" onClick={requestLocation}>
+                <Crosshair size={14} /> Activer ma position
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       <main>{children ?? <Outlet />}</main>
 
       <footer className="site-footer">
         <div className="container footer-top">
           <div className="footer-brand">
             <Logo light />
-            <p>La plateforme immobilière qui rapproche les propriétaires, les locataires et les agences au Bénin.</p>
-            <div className="footer-trust"><ShieldCheck size={16} /> Annonces vérifiées par l'agence partenaire</div>
+            <p>{SITE_TAGLINE}. Annonces vérifiées, terrains à acheter et accompagnement jusqu'aux clés.</p>
+            <div className="footer-trust"><ShieldCheck size={16} /> Garantie : avance de 3 mois sur chaque annonce</div>
           </div>
           <div className="footer-col">
             <h4>Explorer</h4>
             <Link to="/annonces"><Search size={14} /> Toutes les annonces</Link>
             <Link to="/annonces?map=1"><Building2 size={14} /> Carte des biens</Link>
-            <Link to="/annonces?type=Terrain">Terrains à vendre</Link>
+            <Link to="/terrains">Terrains à acheter</Link>
             <Link to="/devenir-proprietaire">Publier une annonce</Link>
           </div>
           <div className="footer-col">
@@ -152,7 +172,7 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
           </div>
         </div>
         <div className="container footer-bottom">
-          <span>© 2026 Kado Immo · Déployé d'abord au Bénin 🇧🇯</span>
+          <span>© 2026 {SITE_NAME} · Déployé d'abord au Bénin 🇧🇯</span>
           <span>Cotonou · Porto-Novo · Parakou · Abomey-Calavi</span>
         </div>
       </footer>

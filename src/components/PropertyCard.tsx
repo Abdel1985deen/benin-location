@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { BadgeCheck, BedDouble, Bath, Heart, MapPin, Maximize2, MoveRight, Ruler } from 'lucide-react'
+import { BadgeCheck, BedDouble, Bath, Heart, MapPin, Maximize2, MoveRight, Ruler, ShieldCheck } from 'lucide-react'
+import { GUARANTEE_MONTHS } from '../lib/site'
 import { useStore } from '../lib/store'
 import { distanceKm, shortMoney } from '../lib/utils'
 import type { GeoPoint, Listing } from '../types'
@@ -44,6 +45,7 @@ export default function PropertyCard({
           {listing.rooms > 0 && <span><BedDouble size={15} /> {listing.rooms} ch.</span>}
           {listing.bathrooms > 0 && <span><Bath size={15} /> {listing.bathrooms} sdb</span>}
           <span className="type-tag"><Ruler size={14} /> {listing.type}</span>
+          {listing.type !== 'Terrain' && <span className="furnish-tag">{listing.furnished ? 'Meublé' : 'Non meublé'}</span>}
         </div>
         <div className="card-footer">
           <div className="card-price">
@@ -55,6 +57,9 @@ export default function PropertyCard({
         {!compact && listing.featured && (
           <div className="card-verified"><BadgeCheck size={14} /> Annonce vérifiée par l'agence</div>
         )}
+        <div className="guarantee-chip">
+          <ShieldCheck size={14} /> Garantie : avance de {GUARANTEE_MONTHS} mois
+        </div>
       </div>
     </article>
   )

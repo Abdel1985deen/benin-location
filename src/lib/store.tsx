@@ -1,11 +1,19 @@
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { seedListings, seedUsers } from './data'
-import { uid } from './utils'
+import { GEO_STORAGE_KEY, SITE_NAME, STORAGE_KEY } from './site'
+import { distanceKm, uid } from './utils'
 import type {
-  Contract, Listing, ListingStatus, Message, MovingPlan, Notification, Role, User, VisitRequest,
+  Contract, GeoPoint, Listing, ListingStatus, Message, MovingPlan, Notification, Role, User, VisitRequest,
 } from '../types'
 
-const KEY = 'kado-immo-v2'
+const KEY = STORAGE_KEY
+
+export type GeoStatus = 'prompt' | 'locating' | 'granted' | 'denied' | 'unsupported'
+
+interface GeoState {
+  point: GeoPoint | null
+  status: GeoStatus
+}
 
 interface Persisted {
   users: User[]
@@ -68,7 +76,7 @@ const initialState: Persisted = {
   favorites: { 'u-client': ['l1', 'l2'] },
   notifications: [
     {
-      id: 'n-demo1', userId: 'u-client', title: 'Bienvenue sur Kado Immo',
+      id: 'n-demo1', userId: 'u-client', title: `Bienvenue sur ${SITE_NAME}`,
       body: 'Explorez les annonces autour de vous, planifiez une visite et signez votre contrat en ligne.',
       type: 'info', read: false, link: '/annonces', createdAt: new Date(Date.now() - 86400000).toISOString(),
     },
@@ -127,10 +135,17 @@ function load(): Persisted {
 }
 
 type RegisterInput = Omit<User, 'id' | 'createdAt'>
-type ListingInput = Pick<Listing, 'title' | 'type' | 'city' | 'neighborhood' | 'address' | 'price' | 'sale' | 'surface' | 'rooms' | 'bathrooms' | 'description' | 'amenities' | 'lat' | 'lng' | 'availableFrom' | 'images'>
+type ListingInput = Pick<Listing, 'title' | 'type' | 'city' | 'neighborhood' | 'address' | 'price' | 'sale' | 'surface' | 'rooms' | 'bathrooms' | 'description' | 'amenities' | 'lat' | 'lng' | 'availableFrom' | 'images'> & { furnished?: boolean }
 
 interface StoreValue extends Persisted {
   currentUser: User | null
+  /** Position du visiteur et état de la demande de géolocalisation. */
+  geoPoint: GeoPoint | null
+  geoStatus: GeoStatus
+  requestLocation: () => void
+  clearLocation: () => void
+  /** Toutes les annonces, triées du plus proche au plus éloigné quand la position est connue. */
+  sortedListings: Listing[]
   register: (input: RegisterInput) => User
   login: (email: string, password: string) => User | null
   demoLogin: (role: Role) => void
@@ -157,6 +172,67 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem(KEY, JSON.stringify(state))
   }, [state])
+
+  // Géolocalisation : demande automatique au premier chargement, avec mémorisation du refus.
+  const [geo, setGeo] = useState<GeoState>(() => {
+    try {
+      const raw = sessionStorage.getItem(GEO_STORAGE_KEY)
+      if (raw) return JSON.parse(raw) as GeoState
+    } catch { /* stockage indisponible */ }
+    return { point: null, status: 'prompt' }
+  })
+  const geoRequested = useRef(false)
+
+  const requestLocation = useCallback(() => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) {
+      const next: GeoState = { point: null, status: 'unsupported' }
+      try { sessionStorage.setItem(GEO_STORAGE_KEY, JSON.stringify(next)) } catch { /* noop */ }
+      setGeo(next)
+      return
+    }
+    setGeo((current) => ({ ...current, status: 'locating' }))
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const next: GeoState = {
+          point: { lat: position.coords.latitude, lng: position.coords.longitude },
+          status: 'granted',
+        }
+        try { sessionStorage.setItem(GEO_STORAGE_KEY, JSON.stringify(next)) } catch { /* noop */ }
+        setGeo(next)
+      },
+      (error) => {
+        // Un refus est mémorisé pour ne pas ré-interroger le visiteur à chaque page.
+        const status: GeoStatus = error.code === error.PERMISSION_DENIED ? 'denied' : 'prompt'
+        const next: GeoState = { point: null, status }
+        try {
+          if (status === 'denied') sessionStorage.setItem(GEO_STORAGE_KEY, JSON.stringify(next))
+          else sessionStorage.removeItem(GEO_STORAGE_KEY)
+        } catch { /* noop */ }
+        setGeo(next)
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 },
+    )
+  }, [])
+
+  const clearLocation = useCallback(() => {
+    try { sessionStorage.removeItem(GEO_STORAGE_KEY) } catch { /* noop */ }
+    setGeo({ point: null, status: 'prompt' })
+  }, [])
+
+  useEffect(() => {
+    if (geoRequested.current) return
+    geoRequested.current = true
+    try {
+      if (!sessionStorage.getItem(GEO_STORAGE_KEY)) requestLocation()
+    } catch {
+      requestLocation()
+    }
+  }, [requestLocation])
+
+  const sortedListings = useMemo(() => [...state.listings].sort((a, b) => {
+    if (geo.point) return distanceKm(geo.point, a) - distanceKm(geo.point, b)
+    return Number(b.featured) - Number(a.featured) || b.createdAt.localeCompare(a.createdAt)
+  }), [state.listings, geo.point])
 
   const value = useMemo<StoreValue>(() => {
     const currentUser = state.users.find((u) => u.id === state.currentUserId) ?? null
@@ -348,11 +424,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return {
       ...state,
       currentUser,
+      geoPoint: geo.point,
+      geoStatus: geo.status,
+      requestLocation,
+      clearLocation,
+      sortedListings,
       register, login, demoLogin, logout, addListing, setListingStatus,
       toggleFavorite, addVisit, setVisitStatus, addContract, addMovingPlan, toggleMovingStep,
       notify, markAllRead, sendMessage, markThreadRead,
     }
-  }, [state])
+  }, [state, geo, requestLocation, clearLocation, sortedListings])
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>
 }

@@ -91,7 +91,7 @@ export default function DashboardShell({
           <div className="dash-help">
             <FileText size={18} /><strong>Besoin d'aide ?</strong>
             <p>Notre équipe vous accompagne à chaque étape.</p>
-            <a href="mailto:contact@kadoimmo.bj">Nous contacter →</a>
+            <a href="mailto:contact@allocabenin.bj">Nous contacter →</a>
           </div>
         </aside>
 

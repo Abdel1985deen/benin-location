@@ -62,7 +62,7 @@ export default function ContractView() {
                 <small>{contract.tenant.firstName} {contract.tenant.lastName}</small>
               </div>
               <div className="signature-meta">
-                <p><ShieldCheck size={15} /> Document horodaté et conservé dans l'espace Kado Immo.</p>
+                <p><ShieldCheck size={15} /> Document horodaté et conservé dans l'espace ALLOCA BENIN.</p>
                 <p><MapPin size={15} /> {listing?.city}, Bénin</p>
               </div>
             </div>

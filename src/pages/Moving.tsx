@@ -161,7 +161,7 @@ export default function Moving() {
           <div className="aside-card">
             <h3><PlugZap size={17} /> Besoin d'un coup de main ?</h3>
             <p>Notre équipe peut coordonner les prestataires et suivre l'avancement avec vous.</p>
-            <a href="mailto:contact@kadoimmo.bj" className="text-link">Contacter l'agence <ArrowRight size={14} /></a>
+            <a href="mailto:contact@allocabenin.bj" className="text-link">Contacter l'agence <ArrowRight size={14} /></a>
           </div>
         </aside>
       </div>

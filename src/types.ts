@@ -23,6 +23,8 @@ export interface Listing {
   address: string
   price: number
   sale: boolean
+  /** Logement meublé / non meublé (sans objet pour un terrain). */
+  furnished?: boolean
   surface: number
   rooms: number
   bathrooms: number

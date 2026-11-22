@@ -7,6 +7,7 @@ import Layout from './components/Layout'
 import ScrollToTop from './components/ScrollToTop'
 import Home from './pages/Home'
 import Explore from './pages/Explore'
+import Lands from './pages/Lands'
 import PropertyDetail from './pages/PropertyDetail'
 import Auth from './pages/Auth'
 import ClientDashboard from './pages/ClientDashboard'
@@ -84,6 +85,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/annonces" element={<Explore />} />
+          <Route path="/terrains" element={<Lands />} />
           <Route path="/annonce/:id" element={<PropertyDetail />} />
           <Route path="/client" element={<ClientDashboard />} />
           <Route path="/proprietaire" element={<OwnerDashboard />} />

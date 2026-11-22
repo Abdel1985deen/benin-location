@@ -5,10 +5,11 @@ import {
   HeartHandshake, MapPin, MoveRight, Navigation, PackageCheck, Play, Search,
   ShieldCheck, Sparkles, Star, Truck, UserRoundPlus,
 } from 'lucide-react'
+import BeninMap from '../components/BeninMap'
 import PropertyCard from '../components/PropertyCard'
 import { IMG, cityOptions } from '../lib/data'
+import { SITE_NAME, SITE_TAGLINE } from '../lib/site'
 import { useStore } from '../lib/store'
-import { getPosition } from '../lib/utils'
 
 const budgets = [
   { value: '', label: 'Tous les budgets' },
@@ -18,15 +19,21 @@ const budgets = [
 ]
 
 export default function Home() {
-  const { listings } = useStore()
+  const { sortedListings, geoPoint, requestLocation } = useStore()
   const navigate = useNavigate()
   const [deal, setDeal] = useState<'rent' | 'buy'>('rent')
   const [city, setCity] = useState('')
   const [type, setType] = useState('')
   const [budget, setBudget] = useState('')
-  const [locating, setLocating] = useState(false)
+  const [furnishedOnly, setFurnishedOnly] = useState(false)
 
-  const featured = listings.filter((l) => l.featured && l.status === 'approved').slice(0, 3)
+  const featured = sortedListings.filter((l) => l.featured && l.status === 'approved').slice(0, 3)
+  const lands = sortedListings.filter((l) => l.type === 'Terrain' && l.sale && l.status === 'approved').slice(0, 3)
+  const people = [
+    { name: 'Chantal S.', city: 'Cotonou', photo: IMG.person1 },
+    { name: 'Amédée D.', city: 'Abomey-Calavi', photo: IMG.person2 },
+    { name: 'Mariam A.', city: 'Porto-Novo', photo: IMG.person3 },
+  ]
 
   const search = (e: React.FormEvent) => {
     e.preventDefault()
@@ -35,19 +42,13 @@ export default function Home() {
     if (city) p.set('city', city)
     if (type) p.set('type', type)
     if (budget) p.set('max', budget)
+    if (furnishedOnly && deal === 'rent' && type !== 'Terrain') p.set('furnished', '1')
     navigate(`/annonces?${p.toString()}`)
   }
 
-  const nearMe = async () => {
-    setLocating(true)
-    const point = await getPosition()
-    setLocating(false)
-    if (point) {
-      sessionStorage.setItem('kado-point', JSON.stringify(point))
-      navigate('/annonces?near=1')
-    } else {
-      navigate('/annonces?map=1')
-    }
+  const nearMe = () => {
+    requestLocation()
+    navigate('/annonces')
   }
 
   return (
@@ -58,11 +59,11 @@ export default function Home() {
         <div className="hero-glow hero-glow-two" />
         <div className="container hero-grid">
           <div className="hero-copy">
-            <div className="eyebrow"><span className="eyebrow-dot" /> La location immobilière, repensée au Bénin</div>
+            <div className="eyebrow"><span className="eyebrow-dot" /> {SITE_NAME} · {SITE_TAGLINE}</div>
             <h1>Le bon logement au Bénin,<br /><em>sans détour.</em></h1>
             <p className="hero-lead">
-              Annonces vérifiées, visites virtuelles, contrats signés en ligne et accompagnement jusqu'au déménagement.
-              Votre chez-vous est à quelques clics — où que vous soyez à Cotonou, Parakou ou ailleurs.
+              Louez partout au Bénin facilement et rapidement via votre position : annonces vérifiées,
+              visites virtuelles, contrats en ligne et accompagnement jusqu'au déménagement.
             </p>
 
             <form className="search-panel" onSubmit={search}>
@@ -100,36 +101,45 @@ export default function Home() {
                 </label>
                 <button className="btn btn-primary search-submit" type="submit"><Search size={18} /> Rechercher</button>
               </div>
+              <div className="search-extra">
+                {deal === 'rent' && type !== 'Terrain' ? (
+                  <label className="check-option">
+                    <input type="checkbox" checked={furnishedOnly} onChange={(e) => setFurnishedOnly(e.target.checked)} />
+                    Logement meublé uniquement
+                  </label>
+                ) : <span />}
+                <span>Garantie : avance de 3 mois affichée sur chaque annonce</span>
+              </div>
             </form>
 
             <div className="hero-trust">
-              <button className="geo-link" onClick={nearMe} disabled={locating}>
-                <Navigation size={16} /> {locating ? 'Localisation…' : 'Voir les biens autour de moi'}
+              <button className="geo-link" onClick={nearMe}>
+                <Navigation size={16} /> {geoPoint ? 'Voir les biens autour de moi' : 'Activer ma position et voir les biens'}
               </button>
               <span className="trust-divider" />
-              <div className="avatar-stack">
-                <span>KM</span><span>AS</span><span>DB</span>
+              <div className="avatar-stack photo-stack">
+                {people.map((p) => <img key={p.name} src={p.photo} alt={`Client satisfait : ${p.name}`} />)}
               </div>
               <p><strong>2 400+</strong> personnes ont trouvé leur chez-vous</p>
             </div>
           </div>
 
           <div className="hero-visual">
-            <div className="hero-photo-main">
-              <img src={IMG.living1} alt="Appartement lumineux à Cotonou" />
+            <div className="hero-photo-main hero-map-main">
+              <span className="map-card-label"><span className="flag-dots"><i /><i /><i /></span> Le Bénin, de la côte au nord</span>
+              <BeninMap className="hero-benin-map" />
               <div className="photo-gradient" />
               <div className="photo-caption">
-                <span><MapPin size={13} /> Haie Vive, Cotonou</span>
-                <strong>Appartement 3 pièces</strong>
+                <span><MapPin size={13} /> Cotonou · Parakou · Natitingou</span>
+                <strong>Des biens partout au Bénin</strong>
               </div>
-              <Link to="/annonce/l1" className="virtual-chip"><Play size={13} fill="currentColor" /> Visite virtuelle 360°</Link>
             </div>
             <div className="hero-photo-small">
-              <img src={IMG.house1} alt="Villa au Bénin" />
+              <img src={IMG.living1} alt="Logement proposé sur ALLOCA BENIN" />
             </div>
             <div className="floating-card float-verified">
               <span className="float-icon green"><BadgeCheck size={20} /></span>
-              <div><strong>Annonce vérifiée</strong><small>Par l'agence partenaire</small></div>
+              <div><strong>Annonce vérifiée</strong><small>Garantie : 3 mois d'avance</small></div>
             </div>
             <div className="floating-card float-price">
               <small>Loyer mensuel moyen</small>
@@ -162,7 +172,24 @@ export default function Home() {
             <Link to="/annonces" className="btn btn-outline">Voir toutes les annonces <ArrowRight size={16} /></Link>
           </div>
           <div className="property-grid">
-            {featured.map((l) => <PropertyCard key={l.id} listing={l} />)}
+            {featured.map((l) => <PropertyCard key={l.id} listing={l} userPoint={geoPoint} />)}
+          </div>
+        </div>
+      </section>
+
+      {/* TERRAINS À ACHETER */}
+      <section className="section section-tint" id="terrains">
+        <div className="container">
+          <div className="section-head">
+            <div>
+              <span className="section-kicker"><Building2 size={14} /> Nouvelle rubrique</span>
+              <h2>Terrains à acheter<br />partout au Bénin</h2>
+              <p>Parcelles viabilisées, titres fonciers et emplacements à fort potentiel, triés selon votre position.</p>
+            </div>
+            <Link to="/terrains" className="btn btn-primary">Voir tous les terrains <ArrowRight size={16} /></Link>
+          </div>
+          <div className="property-grid">
+            {lands.map((l) => <PropertyCard key={l.id} listing={l} userPoint={geoPoint} />)}
           </div>
         </div>
       </section>
@@ -174,16 +201,16 @@ export default function Home() {
             <span className="section-kicker light"><MapPin size={14} /> Géolocalisation intelligente</span>
             <h2>Votre emplacement devient<br />votre meilleur critère de recherche.</h2>
             <p>
-              Autorisez la localisation : Kado Immo identifie votre position, calcule les distances réelles
+              Autorisez la localisation : ALLOCA BENIN identifie votre position, calcule les distances réelles
               et vous propose les appartements, maisons et terrains réellement disponibles autour de vous.
             </p>
             <ul className="check-list">
               <li><Check size={16} /> Résultats triés par distance depuis votre position</li>
               <li><Check size={16} /> Rayon de recherche et carte interactive</li>
-              <li><Check size={16} /> Repli manuel par ville si la localisation est refusée</li>
+              <li><Check size={16} /> Sans position ? Toutes les annonces restent visibles</li>
             </ul>
-            <button className="btn btn-accent" onClick={nearMe} disabled={locating}>
-              <Navigation size={17} /> {locating ? 'Localisation en cours…' : 'Découvrir les biens autour de moi'}
+            <button className="btn btn-accent" onClick={nearMe}>
+              <Navigation size={17} /> Découvrir les biens autour de moi
             </button>
           </div>
           <div className="geo-visual">
@@ -266,17 +293,20 @@ export default function Home() {
       {/* TESTIMONIALS */}
       <section className="section">
         <div className="container">
-          <div className="section-head center"><div><span className="section-kicker">Ils ont franchi le pas</span><h2>Des histoires de chez-vous.</h2></div></div>
+          <div className="section-head center"><div><span className="section-kicker">Clients satisfaits</span><h2>Des histoires de chez-vous.</h2><p>Des visages, des parcours réussis partout au Bénin.</p></div></div>
           <div className="testimonial-grid">
-            {[
-              { name: 'Chantal S.', role: 'Locataire à Cotonou', text: "J'ai trouvé mon appartement en deux jours. La visite virtuelle m'a permis de visiter avant de quitter Parakou, et le contrat a été signé depuis mon téléphone.", initials: 'CS' },
-              { name: 'Amédée D.', role: 'Propriétaire à Abomey-Calavi', text: "Avant, je perdais des semaines à répondre aux appels. Aujourd'hui je reçois des demandes sérieuses et je vois tout le suivi dans mon espace.", initials: 'AD' },
-              { name: 'Mariam A.', role: 'Agence partenaire', text: "Le tableau de bord nous fait gagner un temps fou. Tout est tracé : annonces, visites, contrats. C'est exactement ce qu'il nous manquait.", initials: 'MA' },
-            ].map((t) => (
-              <div className="testimonial" key={t.name}>
-                <div className="stars">{Array.from({ length: 5 }).map((_, i) => <Star key={i} size={14} fill="currentColor" />)}</div>
-                <p>« {t.text} »</p>
-                <div className="testimonial-author"><span>{t.initials}</span><div><strong>{t.name}</strong><small>{t.role}</small></div></div>
+            {people.map((person, i) => (
+              <div className="testimonial" key={person.name}>
+                <div className="stars">{Array.from({ length: 5 }).map((_, j) => <Star key={j} size={14} fill="currentColor" />)}</div>
+                <p>« {[
+                  "J'ai trouvé mon appartement en deux jours. La visite virtuelle m'a permis de visiter avant de quitter Parakou, et le contrat a été signé depuis mon téléphone.",
+                  "Avant, je perdais des semaines à répondre aux appels. Aujourd'hui je reçois des demandes sérieuses et je vois tout le suivi dans mon espace.",
+                  "Le tableau de bord nous fait gagner un temps fou. Tout est tracé : annonces, visites, contrats. C'est exactement ce qu'il nous manquait.",
+                ][i]} »</p>
+                <div className="testimonial-author">
+                  <img className="testimonial-photo" src={person.photo} alt={`Portrait de ${person.name}, client satisfait`} />
+                  <div><strong>{person.name}</strong><small>{['Locataire à Cotonou', 'Propriétaire à Abomey-Calavi', 'Agence immobilière partenaire'][i]}</small></div>
+                </div>
               </div>
             ))}
           </div>
@@ -289,7 +319,7 @@ export default function Home() {
           <div>
             <span className="section-kicker light"><Sparkles size={14} /> Prêt à commencer ?</span>
             <h2>Votre prochain chez-vous<br />vous attend au Bénin.</h2>
-            <p>Rejoignez Kado Immo, gratuitement, et trouvez aujourd'hui le bien qui vous correspond.</p>
+            <p>Rejoignez {SITE_NAME}, gratuitement : {SITE_TAGLINE.toLowerCase()}.</p>
           </div>
           <div className="final-cta-actions">
             <Link to="/connexion?mode=register" className="btn btn-accent btn-lg">Créer mon compte gratuitement <ArrowRight size={18} /></Link>

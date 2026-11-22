@@ -38,8 +38,8 @@ export default function MapView({
     listings.forEach((l) => {
       const active = l.id === selectedId
       const icon = L.divIcon({
-        className: 'kado-pin-wrap',
-        html: `<div class="kado-pin ${active ? 'active' : ''}"><span>${l.sale ? '◆' : '⌂'}</span></div>`,
+        className: 'alloca-pin-wrap',
+        html: `<div class="alloca-pin ${active ? 'active' : ''}"><span>${l.sale ? '◆' : '⌂'}</span></div>`,
         iconSize: [36, 44], iconAnchor: [18, 40],
       })
       const m = L.marker([l.lat, l.lng], { icon }).addTo(layer.current!)
@@ -50,7 +50,7 @@ export default function MapView({
             <small>${l.city} · ${l.type}</small>
             <strong>${l.title}</strong>
             <b>${shortMoney(l.price)}${l.sale ? '' : ' / mois'}</b>
-            <a href="/annonce/${l.id}">Voir l'annonce →</a>
+            <a href="#/annonce/${l.id}">Voir l'annonce →</a>
           </div>
         </div>`)
       m.on('click', () => onSelect?.(l.id))

@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  ArrowLeft, Building2, Check, ImagePlus, MapPin, Navigation, Plus, Sparkles, X,
+  ArrowLeft, Building2, Check, ImagePlus, MapPin, Navigation, Plus, ShieldCheck, Sparkles, X,
 } from 'lucide-react'
 import { CITIES, IMG } from '../lib/data'
+import { GUARANTEE_MONTHS, SITE_NAME } from '../lib/site'
 import { useStore } from '../lib/store'
 import { todayISO } from '../lib/utils'
 import type { PropertyType } from '../types'
@@ -20,7 +21,7 @@ export default function Publish() {
   }, [currentUser, navigate])
 
   const [form, setForm] = useState({
-    title: '', type: 'Appartement' as PropertyType, sale: false, city: 'Cotonou',
+    title: '', type: 'Appartement' as PropertyType, sale: false, furnished: false, city: 'Cotonou',
     neighborhood: '', address: '', price: '', surface: '', rooms: '1', bathrooms: '1',
     description: '', availableFrom: todayISO(), lat: '', lng: '',
   })
@@ -30,6 +31,11 @@ export default function Publish() {
   const [done, setDone] = useState(false)
 
   const set = (key: string, value: string | boolean) => setForm((f) => ({ ...f, [key]: value }))
+
+  const pickType = (value: PropertyType) => {
+    // Un terrain est toujours à vendre et n'a pas de notion de mobilier.
+    setForm((f) => ({ ...f, type: value, sale: value === 'Terrain' ? true : f.sale, furnished: value === 'Terrain' ? false : f.furnished }))
+  }
 
   const pickCity = (city: string) => {
     const c = CITIES.find((x) => x.name === city)
@@ -50,7 +56,7 @@ export default function Publish() {
     }
     addListing({
       title: form.title, type: form.type, city: form.city, neighborhood: form.neighborhood || form.city,
-      address: form.address, price: Number(form.price), sale: form.sale, surface: Number(form.surface),
+      address: form.address, price: Number(form.price), sale: form.sale, furnished: form.furnished, surface: Number(form.surface),
       rooms: Number(form.rooms), bathrooms: Number(form.bathrooms), description: form.description || 'Bien à découvrir.',
       amenities, images, lat: Number(form.lat) || 6.3703, lng: Number(form.lng) || 2.3912,
       availableFrom: form.availableFrom,
@@ -64,10 +70,10 @@ export default function Publish() {
       <div className="success-hero">
         <span><Check size={34} /></span>
         <h1>Votre annonce est en ligne de validation</h1>
-        <p>L'agence Kado Immo va vérifier les informations et la publier sous peu. Vous recevrez les demandes de visite directement dans votre espace.</p>
+        <p>L'agence {SITE_NAME} va vérifier les informations et la publier sous peu. Vous recevrez les demandes de visite directement dans votre espace.</p>
         <div className="success-actions">
           <Link to="/proprietaire" className="btn btn-primary">Voir mon espace <ArrowLeft size={16} className="flip" /></Link>
-          <button className="btn btn-outline" onClick={() => { setDone(false); setForm({ title: '', type: 'Appartement', sale: false, city: 'Cotonou', neighborhood: '', address: '', price: '', surface: '', rooms: '1', bathrooms: '1', description: '', availableFrom: todayISO(), lat: '', lng: '' }) }}>Publier un autre bien</button>
+          <button className="btn btn-outline" onClick={() => { setDone(false); setForm({ title: '', type: 'Appartement', sale: false, furnished: false, city: 'Cotonou', neighborhood: '', address: '', price: '', surface: '', rooms: '1', bathrooms: '1', description: '', availableFrom: todayISO(), lat: '', lng: '' }) }}>Publier un autre bien</button>
         </div>
       </div>
     </div>
@@ -91,9 +97,24 @@ export default function Publish() {
             <h2><span>1</span> Informations principales</h2>
             <label className="field"><span>Titre de l'annonce *</span><input value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="Ex. Appartement lumineux à Haie Vive" /></label>
             <div className="field-row">
-              <label className="field"><span>Type de bien</span><select value={form.type} onChange={(e) => set('type', e.target.value)}>{['Appartement', 'Maison', 'Studio', 'Villa', 'Terrain'].map((t) => <option key={t}>{t}</option>)}</select></label>
+              <label className="field"><span>Type de bien</span><select value={form.type} onChange={(e) => pickType(e.target.value as PropertyType)}>{['Appartement', 'Maison', 'Studio', 'Villa', 'Terrain'].map((t) => <option key={t}>{t}</option>)}</select></label>
               <label className="field"><span>Transaction</span><select value={form.sale ? 'sale' : 'rent'} onChange={(e) => set('sale', e.target.value === 'sale')}><option value="rent">À louer</option><option value="sale">À vendre</option></select></label>
             </div>
+            {form.type !== 'Terrain' && (
+              <div className="field-row">
+                <label className="field">
+                  <span>Logement</span>
+                  <select value={form.furnished ? 'furnished' : 'unfurnished'} onChange={(e) => set('furnished', e.target.value === 'furnished')}>
+                    <option value="unfurnished">Non meublé</option>
+                    <option value="furnished">Meublé</option>
+                  </select>
+                </label>
+                <div className="field guarantee-note-field">
+                  <span>Garantie affichée sur l'annonce</span>
+                  <p><ShieldCheck size={15} /> Avance de {GUARANTEE_MONTHS} mois</p>
+                </div>
+              </div>
+            )}
             <div className="field-row">
               <label className="field"><span>Prix ({form.sale ? 'vente' : 'mensuel'}) en FCFA *</span><input type="number" value={form.price} onChange={(e) => set('price', e.target.value)} placeholder="185000" /></label>
               <label className="field"><span>Surface (m²) *</span><input type="number" value={form.surface} onChange={(e) => set('surface', e.target.value)} placeholder="92" /></label>
@@ -159,7 +180,7 @@ export default function Publish() {
           <div className="tips-card accent">
             <span><Sparkles size={20} /></span>
             <h3>Visibilité garantie</h3>
-            <p>Votre annonce est diffusée à tous les clients Kado Immo et géolocalisée pour apparaître dans les recherches « autour de moi ».</p>
+            <p>Votre annonce est diffusée à tous les clients {SITE_NAME} et géolocalisée pour apparaître dans les recherches « autour de moi ».</p>
           </div>
           <button className="tips-close" onClick={() => navigate('/proprietaire')}><X size={14} /> Quitter</button>
         </aside>

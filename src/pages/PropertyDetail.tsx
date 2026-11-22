@@ -7,6 +7,7 @@ import {
 } from 'lucide-react'
 import MapView from '../components/MapView'
 import PropertyCard from '../components/PropertyCard'
+import { GUARANTEE_MONTHS, SITE_NAME, SUPPORT_EMAIL } from '../lib/site'
 import { useStore } from '../lib/store'
 import { dateFR, money, nearestCity, todayISO } from '../lib/utils'
 
@@ -45,8 +46,8 @@ function VirtualTour({ image, title }: { image: string; title: string }) {
 export default function PropertyDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { listings, users, currentUser, favorites, toggleFavorite, addVisit, messages, sendMessage } = useStore()
-  const listing = listings.find((l) => l.id === id)
+  const { users, currentUser, favorites, toggleFavorite, addVisit, messages, sendMessage, sortedListings } = useStore()
+  const listing = sortedListings.find((l) => l.id === id)
   const [photo, setPhoto] = useState(0)
   const [tour, setTour] = useState(false)
   const [sent, setSent] = useState(false)
@@ -62,7 +63,7 @@ export default function PropertyDetail() {
 
   const owner = users.find((u) => u.id === listing.ownerId)
   const isFav = currentUser ? (favorites[currentUser.id] ?? []).includes(listing.id) : false
-  const similar = listings.filter((l) => l.id !== listing.id && l.city === listing.city && l.status === 'approved').slice(0, 3)
+  const similar = sortedListings.filter((l) => l.id !== listing.id && l.city === listing.city && l.status === 'approved').slice(0, 3)
 
   const requestVisit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -103,6 +104,7 @@ export default function PropertyDetail() {
             <div className="detail-tags">
               <span className="badge badge-primary">{listing.sale ? 'À vendre' : 'À louer'}</span>
               <span className="badge badge-soft">{listing.type}</span>
+              {listing.type !== 'Terrain' && <span className="badge badge-soft">{listing.furnished ? 'Meublé' : 'Non meublé'}</span>}
               <span className="badge badge-green"><ShieldCheck size={13} /> Vérifié</span>
             </div>
             <h1>{listing.title}</h1>
@@ -134,6 +136,16 @@ export default function PropertyDetail() {
               {listing.rooms > 0 && <div><BedDouble size={20} /><strong>{listing.rooms}</strong><span>Chambres</span></div>}
               {listing.bathrooms > 0 && <div><Bath size={20} /><strong>{listing.bathrooms}</strong><span>Salles d'eau</span></div>}
               <div><CalendarDays size={20} /><strong>{new Date(listing.availableFrom).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</strong><span>Disponible dès</span></div>
+            </div>
+
+            <div className="guarantee-panel">
+              <span className="guarantee-icon"><ShieldCheck size={22} /></span>
+              <div>
+                <strong>Garantie : avance de {GUARANTEE_MONTHS} mois</strong>
+                <p>{listing.sale
+                  ? `Une avance de ${GUARANTEE_MONTHS} mois est demandée comme garantie lors de la réservation de ce bien.`
+                  : `Une avance de ${GUARANTEE_MONTHS} mois sur le loyer est demandée comme garantie à la signature du bail.`}</p>
+              </div>
             </div>
 
             <section className="detail-block">
@@ -197,10 +209,10 @@ export default function PropertyDetail() {
               <h3>Votre interlocuteur</h3>
               <div className="agent-row">
                 <span className="agent-avatar"><UserRound size={22} /></span>
-                <div><strong>{owner?.name ?? 'Agence Kado Immo'}</strong><small>{owner?.role === 'agency' ? 'Agence partenaire' : 'Propriétaire'}</small></div>
+                <div><strong>{owner?.name ?? `Agence ${SITE_NAME}`}</strong><small>{owner?.role === 'agency' ? 'Agence immobilière partenaire' : 'Propriétaire'}</small></div>
               </div>
-              <div className="agent-contact"><span>{owner?.phone ?? '+229 21 30 45 67'}</span><span>{owner?.email ?? 'contact@kadoimmo.bj'}</span></div>
-              <div className="agent-badge"><ShieldCheck size={15} /> Identité vérifiée par Kado Immo</div>
+              <div className="agent-contact"><span>{owner?.phone ?? '+229 21 30 45 67'}</span><span>{owner?.email ?? SUPPORT_EMAIL}</span></div>
+              <div className="agent-badge"><ShieldCheck size={15} /> Identité vérifiée par {SITE_NAME}</div>
               {currentUser?.id !== listing.ownerId ? (
                 <>
                   <form onSubmit={contactOwner} className="contact-form">
@@ -219,9 +231,9 @@ export default function PropertyDetail() {
             </div>
 
             <div className="side-card reassurance">
-              <h3><Sparkles size={17} /> Pourquoi passer par Kado ?</h3>
+              <h3><Sparkles size={17} /> Pourquoi choisir {SITE_NAME} ?</h3>
               <p><Check size={15} /> Bien contrôlé par notre agence partenaire</p>
-              <p><Check size={15} /> Contrat clair, sans frais cachés</p>
+              <p><Check size={15} /> Garantie : avance de {GUARANTEE_MONTHS} mois affichée</p>
               <p><Check size={15} /> Accompagnement jusqu'au déménagement</p>
             </div>
           </aside>

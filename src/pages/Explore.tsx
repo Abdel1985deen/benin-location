@@ -1,34 +1,34 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   ArrowUpDown, Building2, Crosshair, Grid2X2, Map as MapIcon, MapPin,
-  RotateCcw, SlidersHorizontal, X,
+  RotateCcw, ShieldCheck, SlidersHorizontal, X,
 } from 'lucide-react'
 import PropertyCard from '../components/PropertyCard'
 import MapView from '../components/MapView'
 import { cityOptions } from '../lib/data'
+import { GUARANTEE_MONTHS } from '../lib/site'
 import { useStore } from '../lib/store'
-import { distanceKm, getPosition, shortMoney } from '../lib/utils'
-import type { GeoPoint, PropertyType } from '../types'
+import { distanceKm, shortMoney } from '../lib/utils'
+import type { PropertyType } from '../types'
 
 const types: PropertyType[] = ['Appartement', 'Maison', 'Studio', 'Villa', 'Terrain']
 
 export default function Explore() {
-  const { listings } = useStore()
+  const { sortedListings, geoPoint, geoStatus, requestLocation, clearLocation } = useStore()
   const [params, setParams] = useSearchParams()
-  const [point, setPoint] = useState<GeoPoint | null>(() => {
-    try { return JSON.parse(sessionStorage.getItem('kado-point') || 'null') } catch { return null }
-  })
+  const point = geoPoint
   const [radius, setRadius] = useState(10)
+  const [useRadius, setUseRadius] = useState(false)
   const [query, setQuery] = useState(params.get('q') ?? '')
-  const [sort, setSort] = useState('recent')
+  const [sort, setSort] = useState('auto')
   const [mobileFilters, setMobileFilters] = useState(false)
-  const [locating, setLocating] = useState(false)
   const [selected, setSelected] = useState<string | null>(null)
 
   const city = params.get('city') ?? ''
   const type = params.get('type') ?? ''
   const max = params.get('max') ?? ''
+  const furnished = params.get('furnished') ?? ''
   const sale = params.get('sale') === '1'
   const showMap = params.get('map') === '1'
 
@@ -38,43 +38,36 @@ export default function Explore() {
     setParams(next, { replace: true })
   }
 
-  useEffect(() => {
-    if (params.get('near') === '1') {
-      getPosition().then((p) => { if (p) { setPoint(p); sessionStorage.setItem('kado-point', JSON.stringify(p)) } })
-    }
-  }, [])
+  const locate = () => requestLocation()
 
-  const locate = async () => {
-    setLocating(true)
-    const p = await getPosition()
-    setLocating(false)
-    if (p) { setPoint(p); sessionStorage.setItem('kado-point', JSON.stringify(p)); setParam('near', '1') }
-  }
+  // Par défaut : proximité si la position est connue, sinon annonces récentes (toutes affichées).
+  const effectiveSort = sort === 'auto' ? (point ? 'distance' : 'recent') : sort
 
   const filtered = useMemo(() => {
-    const list = listings.filter((l) => {
+    const list = sortedListings.filter((l) => {
       if (l.status !== 'approved' && l.status !== 'reserved') return false
       if (sale !== l.sale) return false
       if (city && l.city !== city) return false
       if (type && l.type !== type) return false
       if (max && l.price > Number(max)) return false
+      if (furnished === '1' && !l.furnished) return false
+      if (furnished === '0' && l.furnished) return false
       if (query && !`${l.title} ${l.city} ${l.neighborhood}`.toLowerCase().includes(query.toLowerCase())) return false
-      if (point && distanceKm(point, l) > radius) return false
+      if (point && useRadius && distanceKm(point, l) > radius) return false
       return true
     })
-    if (point && sort === 'distance') list.sort((a, b) => distanceKm(point, a) - distanceKm(point, b))
-    else if (sort === 'price-asc') list.sort((a, b) => a.price - b.price)
-    else if (sort === 'price-desc') list.sort((a, b) => b.price - a.price)
-    else list.sort((a, b) => Number(b.featured) - Number(a.featured) || b.createdAt.localeCompare(a.createdAt))
+    if (point && effectiveSort === 'distance') list.sort((a, b) => distanceKm(point, a) - distanceKm(point, b))
+    else if (effectiveSort === 'price-asc') list.sort((a, b) => a.price - b.price)
+    else if (effectiveSort === 'price-desc') list.sort((a, b) => b.price - a.price)
     return list
-  }, [listings, sale, city, type, max, query, point, radius, sort])
+  }, [sortedListings, sale, city, type, max, furnished, query, point, useRadius, radius, effectiveSort])
 
   const reset = () => {
     setParams(new URLSearchParams(), { replace: true })
-    setQuery(''); setPoint(null); setRadius(10); sessionStorage.removeItem('kado-point')
+    setQuery(''); setRadius(10); setUseRadius(false); clearLocation()
   }
 
-  const activeFilters = [city, type, max].filter(Boolean).length + (point ? 1 : 0)
+  const activeFilters = [city, type, max, furnished].filter(Boolean).length + (point && useRadius ? 1 : 0)
 
   return (
     <div className="page explore-page">
@@ -82,7 +75,7 @@ export default function Explore() {
         <div className="container">
           <div className="breadcrumb">Accueil <span>/</span> Annonces</div>
           <h1>{sale ? 'Biens à vendre' : 'Biens à louer'} <span>au Bénin</span></h1>
-          <p>Trouvez le bien qui vous correspond, près de chez vous.</p>
+          <p>Louer partout au Bénin facilement et rapidement via votre position · Garantie : avance de {GUARANTEE_MONTHS} mois sur chaque annonce.</p>
         </div>
       </div>
 
@@ -121,6 +114,15 @@ export default function Explore() {
           </div>
 
           <div className="filter-group">
+            <label>Logement</label>
+            <div className="segmented">
+              <button className={!furnished ? 'active' : ''} onClick={() => setParam('furnished', '')}>Tous</button>
+              <button className={furnished === '1' ? 'active' : ''} onClick={() => setParam('furnished', '1')}>Meublé</button>
+              <button className={furnished === '0' ? 'active' : ''} onClick={() => setParam('furnished', '0')}>Non meublé</button>
+            </div>
+          </div>
+
+          <div className="filter-group">
             <label>Budget maximum</label>
             <select value={max} onChange={(e) => setParam('max', e.target.value)}>
               <option value="">Sans limite</option>
@@ -134,15 +136,26 @@ export default function Explore() {
             <label><Crosshair size={15} /> Autour de moi</label>
             {point ? (
               <>
-                <div className="geo-active"><span className="pulse" /> Position détectée</div>
-                <input type="range" min="1" max="50" value={radius} onChange={(e) => setRadius(Number(e.target.value))} />
-                <div className="range-label">Rayon : <strong>{radius} km</strong></div>
-                <button className="text-danger" onClick={() => { setPoint(null); setParam('near', ''); sessionStorage.removeItem('kado-point') }}><X size={14} /> Désactiver</button>
+                <div className="geo-active"><span className="pulse" /> Position détectée · tri du plus proche au plus éloigné</div>
+                <label className="check-option radius-toggle">
+                  <input type="checkbox" checked={useRadius} onChange={(e) => setUseRadius(e.target.checked)} />
+                  Limiter à un rayon
+                </label>
+                {useRadius && (
+                  <>
+                    <input type="range" min="1" max="50" value={radius} onChange={(e) => setRadius(Number(e.target.value))} />
+                    <div className="range-label">Rayon : <strong>{radius} km</strong></div>
+                  </>
+                )}
+                <button className="text-danger" onClick={clearLocation}><X size={14} /> Désactiver la position</button>
               </>
             ) : (
-              <button className="btn btn-outline btn-block btn-sm" onClick={locate} disabled={locating}>
-                <Crosshair size={15} /> {locating ? 'Localisation…' : 'Me gélocaliser'}
-              </button>
+              <>
+                {geoStatus === 'denied' && <p className="geo-filter-warn">Position refusée : toutes les annonces sont affichées.</p>}
+                <button className="btn btn-outline btn-block btn-sm" onClick={locate} disabled={geoStatus === 'locating'}>
+                  <Crosshair size={15} /> {geoStatus === 'locating' ? 'Localisation…' : 'Activer ma position'}
+                </button>
+              </>
             )}
           </div>
 
@@ -159,7 +172,7 @@ export default function Explore() {
               <button className="btn btn-outline btn-sm mobile-only" onClick={() => setMobileFilters(true)}><SlidersHorizontal size={15} /> Filtres {activeFilters > 0 && <b>{activeFilters}</b>}</button>
               <label className="sort-select"><ArrowUpDown size={15} />
                 <select value={sort} onChange={(e) => setSort(e.target.value)}>
-                  <option value="recent">Plus récents</option>
+                  <option value="auto">{point ? 'Proximité (automatique)' : 'Récents (automatique)'}</option>
                   <option value="distance">Distance</option>
                   <option value="price-asc">Prix croissant</option>
                   <option value="price-desc">Prix décroissant</option>
@@ -172,12 +185,21 @@ export default function Explore() {
             </div>
           </div>
 
+          {!point && (geoStatus === 'denied' || geoStatus === 'unsupported') && (
+            <div className="explore-geo-notice">
+              <ShieldCheck size={16} />
+              <span>Toutes les annonces sont affichées. Activez la géolocalisation pour les trier de la plus proche à la plus éloignée.</span>
+              {geoStatus === 'denied' && <button className="text-link" onClick={locate}>Activer ma position</button>}
+            </div>
+          )}
+
           {activeFilters > 0 && (
             <div className="active-chips">
               {city && <button onClick={() => setParam('city', '')}>{city} <X size={12} /></button>}
               {type && <button onClick={() => setParam('type', '')}>{type} <X size={12} /></button>}
               {max && <button onClick={() => setParam('max', '')}>{shortMoney(Number(max))} <X size={12} /></button>}
-              {point && <button onClick={() => { setPoint(null); sessionStorage.removeItem('kado-point') }}>Autour de moi <X size={12} /></button>}
+              {furnished && <button onClick={() => setParam('furnished', '')}>{furnished === '1' ? 'Meublé' : 'Non meublé'} <X size={12} /></button>}
+              {useRadius && point && <button onClick={() => setUseRadius(false)}>Rayon {radius} km <X size={12} /></button>}
               <button className="clear-all" onClick={reset}>Tout effacer</button>
             </div>
           )}
