@@ -133,7 +133,7 @@ export default function Home() {
               <BeninMap className="hero-benin-map" />
               <div className="photo-gradient" />
               <div className="photo-caption">
-                <span><MapPin size={13} /> Cotonou · Parakou · Natitingou</span>
+                <span><MapPin size={13} /> 5 villes clés, de la côte au nord</span>
                 <strong>Des biens partout au Bénin</strong>
               </div>
             </div>

@@ -12,6 +12,8 @@ export const DEVELOPER_NAME = 'Altechinnov'
 /** Préfixe public GitHub Pages : /benin-location/ (identique à Vite `base`). */
 export const PUBLIC_BASE = '/benin-location/'
 export const LOGO_URL = `${PUBLIC_BASE}logo.svg`
+export const BENIN_MAP_URL = `${PUBLIC_BASE}benin-map.svg`
+export const BENIN_MAP_PLAIN_URL = `${PUBLIC_BASE}benin-map-plain.svg`
 
 /** Clés de persistance (namespace propres à ALLOCA BENIN). */
 export const STORAGE_KEY = 'alloca-benin-v2'

@@ -283,11 +283,8 @@ main { flex: 1; }
 .flag-dots i:nth-child(1) { background: #0f9d58; }
 .flag-dots i:nth-child(2) { background: #f7c948; }
 .flag-dots i:nth-child(3) { background: #d8402f; }
-.benin-map { height: 100%; width: auto; max-width: 100%; overflow: visible; filter: drop-shadow(0 14px 22px rgba(9,39,34,.22)); }
+.benin-map { height: 100%; width: auto; max-width: 100%; object-fit: contain; object-position: center bottom; filter: drop-shadow(0 14px 22px rgba(9,39,34,.22)); }
 .hero-benin-map { height: 92%; margin-top: 18px; }
-.benin-city-halo { fill: rgba(255,255,255,.35); stroke: rgba(255,255,255,.85); stroke-width: 1; }
-.benin-city-dot { fill: #fff; stroke: #072e28; stroke-width: 1.2; }
-.benin-city-label { font-family: var(--font-body); font-size: 8.5px; font-weight: 800; fill: #072e28; paint-order: stroke; stroke: rgba(255,255,255,.9); stroke-width: 2.5px; stroke-linejoin: round; }
 .photo-gradient { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, rgba(4,30,25,.75)); }
 .hero-map-main .photo-gradient { background: linear-gradient(180deg, transparent 58%, rgba(4,30,25,.62)); }
 .photo-caption { position: absolute; bottom: 22px; left: 24px; color: #fff; display: flex; flex-direction: column; gap: 5px; }
