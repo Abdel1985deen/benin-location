@@ -55,6 +55,11 @@ export default function Home() {
 
   return (
     <>
+      {/* PUBLICITÉ — bandeau en haut de l'accueil */}
+      <div className="container ad-top-wrap">
+        <AdSlot placement="top" featured />
+      </div>
+
       {/* HERO */}
       <section className="hero">
         <div className="hero-glow hero-glow-one" />
@@ -155,11 +160,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* PUBLICITÉ — bandeau en haut de l'accueil */}
-      <div className="container ad-top-wrap">
-        <AdSlot placement="top" featured />
-      </div>
 
       {/* VALUE STRIP */}
       <section className="value-strip">

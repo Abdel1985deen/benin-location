@@ -1052,9 +1052,9 @@ main { flex: 1; }
 /* ---------- Animations légères (transform + opacity) ---------- */
 .reveal { opacity: 0; transform: translate3d(0, 16px, 0); transition: opacity .55s ease, transform .55s cubic-bezier(.22, .61, .36, 1); }
 .reveal.is-visible { opacity: 1; transform: none; }
-.route-fade { animation: route-fade-in .32s ease-out both; }
+.route-fade { animation: route-fade-in .48s cubic-bezier(.22, .61, .36, 1) both; }
 @keyframes route-fade-in {
-  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
   to { opacity: 1; transform: none; }
 }
 /* Retour tactile sur les boutons et les cartes d'annonces. */
@@ -1090,9 +1090,10 @@ main { flex: 1; }
   50% { transform: scale(1.09); opacity: .86; }
 }
 @keyframes ad-shimmer {
-  0%, 18% { transform: translate3d(0, 0, 0) skewX(-18deg); opacity: 0; }
-  32% { opacity: 1; }
-  62%, 100% { transform: translate3d(420%, 0, 0) skewX(-18deg); opacity: 0; }
+  0%, 12% { transform: translate3d(0, 0, 0) skewX(-18deg); opacity: 0; }
+  25% { opacity: 1; }
+  72% { opacity: 1; }
+  88%, 100% { transform: translate3d(420%, 0, 0) skewX(-18deg); opacity: 0; }
 }
 @media (max-width: 860px) {
   .ad-inner { flex-wrap: wrap; }
@@ -1100,7 +1101,8 @@ main { flex: 1; }
 }
 @media (max-width: 620px) {
   .ad-slot { padding: 14px; }
-  .ad-slot-featured .ad-shimmer { display: none; }
+  /* On garde le reflet (transform + opacity seulement) mais plus lent sur petit écran. */
+  .ad-slot-featured .ad-shimmer { width: 45%; animation-duration: 8s; }
   .ad-copy { padding-right: 46px; }
   .ad-copy p { font-size: 10.5px; }
 }
