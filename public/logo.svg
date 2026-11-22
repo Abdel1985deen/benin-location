@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="alloca-logo-title">
+  <title id="alloca-logo-title">ALLOCA BENIN</title>
+  <defs>
+    <clipPath id="benin-shape" clipPathUnits="userSpaceOnUse">
+      <path d="M51.1 16.2 L98.0 6.5 L136.4 9.0 L170.5 25.8 L208.9 29.1 L217.4 61.4 L191.8 84.0 L183.3 116.3 L200.3 145.4 L187.5 177.7 L179.0 203.5 L191.8 229.4 L174.8 255.2 L157.7 274.6 L149.2 294.0 L174.8 310.2 L191.8 332.8 L183.3 355.4 L200.3 378.0 L187.5 403.8 L157.7 413.5 L132.1 413.5 L106.6 403.8 L89.5 384.5 L72.5 365.1 L55.4 348.9 L38.4 332.8 L29.8 306.9 L46.9 284.3 L34.1 261.7 L17.0 242.3 L12.8 216.5 L29.8 190.6 L21.3 164.8 L38.4 138.9 L46.9 113.1 L38.4 87.2 L55.4 61.4 L42.6 35.5 Z" />
+    </clipPath>
+  </defs>
+
+  <rect width="64" height="64" rx="15" fill="#073b34" />
+
+  <!-- Silhouette du Bénin aux couleurs du drapeau, ramenée dans le carré du logo. -->
+  <g transform="translate(16.6 4.1) scale(0.1333)">
+    <g clip-path="url(#benin-shape)">
+      <rect x="0" y="0" width="86.7" height="420" fill="#0f9d58" />
+      <rect x="86.7" y="0" width="86.7" height="420" fill="#f7c948" />
+      <rect x="173.4" y="0" width="86.7" height="420" fill="#d8402f" />
+    </g>
+    <path d="M51.1 16.2 L98.0 6.5 L136.4 9.0 L170.5 25.8 L208.9 29.1 L217.4 61.4 L191.8 84.0 L183.3 116.3 L200.3 145.4 L187.5 177.7 L179.0 203.5 L191.8 229.4 L174.8 255.2 L157.7 274.6 L149.2 294.0 L174.8 310.2 L191.8 332.8 L183.3 355.4 L200.3 378.0 L187.5 403.8 L157.7 413.5 L132.1 413.5 L106.6 403.8 L89.5 384.5 L72.5 365.1 L55.4 348.9 L38.4 332.8 L29.8 306.9 L46.9 284.3 L34.1 261.7 L17.0 242.3 L12.8 216.5 L29.8 190.6 L21.3 164.8 L38.4 138.9 L46.9 113.1 L38.4 87.2 L55.4 61.4 L42.6 35.5 Z"
+      fill="none" stroke="#ffffff" stroke-opacity=".75" stroke-width="4" stroke-linejoin="round" />
+
+    <!-- Points de géolocalisation : nord, centre et côte. -->
+    <g stroke="#073b34" stroke-width="3">
+      <circle cx="65" cy="144" r="22" fill="#ffffff" />
+      <circle cx="184" cy="204" r="22" fill="#ffffff" />
+      <circle cx="153" cy="396" r="22" fill="#ffffff" />
+    </g>
+    <g fill="#d8402f">
+      <circle cx="65" cy="144" r="9" />
+      <circle cx="184" cy="204" r="9" />
+      <circle cx="153" cy="396" r="9" />
+    </g>
+  </g>
+</svg>

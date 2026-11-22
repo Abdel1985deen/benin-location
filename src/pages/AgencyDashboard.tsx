@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Building2, CalendarDays, Check, CheckCircle2, Clock, Eye, FileSignature,
-  ShieldCheck, Users, X,
+  Globe2, Receipt, ShieldCheck, Users, X,
 } from 'lucide-react'
 import DashboardShell, { agencyLinks } from '../components/DashboardShell'
 import { GUARANTEE_MONTHS } from '../lib/site'
@@ -10,7 +10,7 @@ import { useStore } from '../lib/store'
 import { dateFR, shortMoney } from '../lib/utils'
 
 export default function AgencyDashboard() {
-  const { currentUser, users, listings, visits, contracts, setListingStatus, setVisitStatus } = useStore()
+  const { currentUser, users, listings, visits, contracts, diasporaRequests, transactions, setListingStatus, setVisitStatus } = useStore()
   const navigate = useNavigate()
 
   useEffect(() => { if (!currentUser) navigate('/connexion?role=agency') }, [currentUser, navigate])
@@ -103,6 +103,35 @@ export default function AgencyDashboard() {
             <Link to={`/contrat-signe/${c.id}`} className="btn btn-ghost btn-sm">Voir</Link>
           </div>
         }) : <div className="dash-empty"><FileSignature size={26} /><p>Aucun contrat signé pour le moment.</p></div>}
+      </section>
+
+      <section id="transactions" className="dash-section">
+        <div className="dash-section-head">
+          <div><h2>Transactions suivies</h2><p>Demande → avance → confirmation → loyer → reçu (simulation).</p></div>
+          <Link to="/transactions" className="btn btn-outline btn-sm"><Receipt size={15} /> Ouvrir le suivi</Link>
+        </div>
+        <div className="dash-stats compact-stats">
+          <div className="stat-card"><span className="stat-icon gold"><Receipt size={20} /></span><div><strong>{transactions.length}</strong><small>Transactions au total</small></div></div>
+          <div className="stat-card"><span className="stat-icon blue"><Clock size={20} /></span><div><strong>{transactions.filter((t) => t.status !== 'receipt_generated').length}</strong><small>Étapes en cours</small></div></div>
+          <div className="stat-card"><span className="stat-icon teal"><CheckCircle2 size={20} /></span><div><strong>{transactions.filter((t) => t.status === 'receipt_generated').length}</strong><small>Reçus générés</small></div></div>
+        </div>
+      </section>
+
+      <section id="diaspora" className="dash-section">
+        <div className="dash-section-head"><div><h2>Projets diaspora</h2><p>Demandes d’accès confiées à l’agence. Aucune pièce d’identité n’est téléversée.</p></div></div>
+        {diasporaRequests.length ? (
+          <div className="dash-table">
+            <div className="table-head"><span>Projet</span><span>Contact</span><span>Budget</span><span>Reçu le</span></div>
+            {diasporaRequests.map((d) => (
+              <div className="table-row" key={d.id}>
+                <span><strong>{d.name}</strong><small>{d.project} · {d.city}</small></span>
+                <span><strong>{d.whatsapp}</strong><small>{d.email} · {d.country}</small></span>
+                <span><strong>{d.budget}</strong></span>
+                <span><strong>{dateFR(d.createdAt)}</strong><small>Nouveau</small></span>
+              </div>
+            ))}
+          </div>
+        ) : <div className="dash-empty"><Globe2 size={26} /><p>Aucun projet diaspora reçu pour le moment.</p></div>}
       </section>
     </DashboardShell>
   )

@@ -4,13 +4,13 @@ import {
   ArrowRight, Bell, Building2, ChevronDown, Crosshair, Heart, LayoutDashboard, LogOut, Menu,
   MessageCircle, Search, ShieldCheck, UserRound, X,
 } from 'lucide-react'
-import { SITE_NAME, SITE_TAGLINE } from '../lib/site'
+import { DEVELOPER_NAME, LOGO_URL, PUBLIC_BASE, SITE_NAME, SITE_TAGLINE, SUPPORT_WHATSAPP } from '../lib/site'
 import { useStore } from '../lib/store'
 
 export function Logo({ light = false }: { light?: boolean }) {
   return (
     <Link to="/" className={`logo ${light ? 'logo-light' : ''}`} aria-label={`${SITE_NAME}, accueil`}>
-      <span className="logo-mark"><span></span><span></span><span></span></span>
+      <img className="logo-img" src={LOGO_URL} alt="" width="38" height="38" />
       <span className="logo-text">ALLOCA<span> BENIN</span></span>
     </Link>
   )
@@ -52,6 +52,7 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
             <NavLink to="/annonces?map=1" onClick={() => setMenuOpen(false)}>Carte</NavLink>
             <NavLink to="/#fonctionnement" onClick={() => setMenuOpen(false)}>Comment ça marche</NavLink>
             <NavLink to="/devenir-proprietaire" onClick={() => setMenuOpen(false)}>Propriétaires</NavLink>
+            <NavLink to="/connexion?mode=register&type=diaspora" onClick={() => setMenuOpen(false)}>Diaspora</NavLink>
             {currentUser && <NavLink to="/messages" onClick={() => setMenuOpen(false)} className={({ isActive }) => `nav-messages ${isActive ? 'active' : ''}`}>Messages {unreadMsg > 0 && <span className="nav-badge">{unreadMsg}</span>}</NavLink>}
             <div className="mobile-only nav-extra">
               {currentUser ? (
@@ -163,16 +164,21 @@ export default function Layout({ children }: { children?: React.ReactNode }) {
             <Link to="/connexion?role=client">Espace client</Link>
             <Link to="/connexion?role=owner">Espace propriétaire</Link>
             <Link to="/connexion?role=agency">Espace agence</Link>
-            <Link to="/client#contrats">Mes contrats</Link>
+            <Link to="/transactions">Suivi des transactions</Link>
+            <Link to="/connexion?mode=register&type=diaspora">Projet diaspora</Link>
           </div>
           <div className="footer-cta">
             <h4>Prêt à trouver votre chez-vous ?</h4>
             <p>Recevez les nouvelles annonces correspondant à votre recherche.</p>
             <Link to="/connexion?mode=register" className="btn btn-accent btn-sm">Créer mon compte <ArrowRight size={15} /></Link>
+            <a href={SUPPORT_WHATSAPP} target="_blank" rel="noreferrer" className="btn btn-whatsapp btn-sm footer-whatsapp">
+              <MessageCircle size={15} /> Service client WhatsApp
+            </a>
           </div>
         </div>
         <div className="container footer-bottom">
           <span>© 2026 {SITE_NAME} · Déployé d'abord au Bénin 🇧🇯</span>
+          <span>Site réalisé par <strong>{DEVELOPER_NAME}</strong> · <a href={`${PUBLIC_BASE}images/CREDITS.md`} target="_blank" rel="noreferrer">Crédits photos</a></span>
           <span>Cotonou · Porto-Novo · Parakou · Abomey-Calavi</span>
         </div>
       </footer>

@@ -46,7 +46,7 @@ function VirtualTour({ image, title }: { image: string; title: string }) {
 export default function PropertyDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { users, currentUser, favorites, toggleFavorite, addVisit, messages, sendMessage, sortedListings } = useStore()
+  const { users, currentUser, favorites, toggleFavorite, addVisit, messages, sendMessage, sortedListings, startTransaction } = useStore()
   const listing = sortedListings.find((l) => l.id === id)
   const [photo, setPhoto] = useState(0)
   const [tour, setTour] = useState(false)
@@ -80,6 +80,12 @@ export default function PropertyDetail() {
     setAsk('')
     setAskSent(true)
     setTimeout(() => setAskSent(false), 2500)
+  }
+
+  const beginTransaction = () => {
+    if (!currentUser) { navigate(`/connexion?next=/annonce/${listing.id}`); return }
+    const txn = startTransaction(listing.id)
+    if (txn) navigate('/transactions')
   }
 
   const threadWithOwner = currentUser
@@ -199,7 +205,13 @@ export default function PropertyDetail() {
                 </form>
               )}
               {!listing.sale && listing.status === 'approved' ? (
-                <Link to={`/contrat/${listing.id}`} className="btn btn-accent btn-block"><FileSignature size={17} /> Remplir le contrat en ligne</Link>
+                <>
+                  <Link to={`/contrat/${listing.id}`} className="btn btn-accent btn-block"><FileSignature size={17} /> Remplir le contrat en ligne</Link>
+                  <button className="btn btn-outline btn-block tx-start" onClick={beginTransaction}>
+                    <ShieldCheck size={17} /> Démarrer la transaction (démo)
+                  </button>
+                  <p className="form-note">Parcours simulé : demande, avance de 3 mois, confirmation, loyer et reçu. Aucun paiement réel.</p>
+                </>
               ) : !listing.sale && listing.status === 'reserved' ? (
                 <div className="info-box"><ShieldCheck size={17} /> Ce bien est actuellement réservé.</div>
               ) : null}

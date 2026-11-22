@@ -116,3 +116,47 @@ export interface GeoPoint {
   lat: number
   lng: number
 }
+
+/** Demande d'accès au service foncier pour un projet depuis l'étranger. */
+export interface DiasporaRequest {
+  id: string
+  name: string
+  country: string
+  city: string
+  budget: string
+  project: string
+  whatsapp: string
+  email: string
+  status: 'received'
+  createdAt: string
+}
+
+/** Étapes d'une transaction immobilière simulée (aucun paiement réel). */
+export type TransactionStatus =
+  | 'request'
+  | 'advance_paid'
+  | 'confirmed'
+  | 'rent_paid'
+  | 'receipt_generated'
+
+export interface TransactionEvent {
+  status: TransactionStatus
+  label: string
+  by: string
+  at: string
+}
+
+export interface Transaction {
+  id: string
+  listingId: string
+  clientId: string
+  ownerId: string
+  agencyId?: string
+  rent: number
+  monthsAdvance: number
+  status: TransactionStatus
+  createdAt: string
+  updatedAt: string
+  receiptNumber?: string
+  events: TransactionEvent[]
+}

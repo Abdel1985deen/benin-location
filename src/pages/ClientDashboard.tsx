@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   ArrowRight, CalendarDays, CheckCircle2, Clock, FileSignature, Heart,
-  MapPin, PackageCheck, Plus, Truck, XCircle,
+  MapPin, PackageCheck, Plus, Receipt, Truck, XCircle,
 } from 'lucide-react'
 import DashboardShell, { clientLinks } from '../components/DashboardShell'
 import PropertyCard from '../components/PropertyCard'
@@ -10,7 +10,7 @@ import { useStore } from '../lib/store'
 import { dateFR } from '../lib/utils'
 
 export default function ClientDashboard() {
-  const { currentUser, listings, favorites, visits, contracts, movingPlans } = useStore()
+  const { currentUser, listings, favorites, visits, contracts, movingPlans, transactions } = useStore()
   const navigate = useNavigate()
 
   useEffect(() => { if (!currentUser) navigate('/connexion?role=client') }, [currentUser, navigate])
@@ -20,6 +20,7 @@ export default function ClientDashboard() {
   const myVisits = visits.filter((v) => v.clientId === currentUser.id)
   const myContracts = contracts.filter((c) => c.clientId === currentUser.id)
   const myMoves = movingPlans.filter((m) => m.clientId === currentUser.id)
+  const myTxns = transactions.filter((t) => t.clientId === currentUser.id)
 
   return (
     <DashboardShell
@@ -100,6 +101,18 @@ export default function ClientDashboard() {
             <ArrowRight size={17} />
           </Link>
         )) : <div className="dash-empty"><Truck size={26} /><p>Le suivi du déménagement apparaîtra ici après la signature d'un contrat.</p></div>}
+      </section>
+
+      <section id="transactions" className="dash-section">
+        <div className="dash-section-head">
+          <div><h2>Suivi des transactions</h2><p>Demande, avance de 3 mois, confirmation, loyer et reçu — simulation sans paiement réel.</p></div>
+          <Link to="/transactions" className="btn btn-outline btn-sm"><Receipt size={15} /> Ouvrir le suivi</Link>
+        </div>
+        <div className="dash-stats compact-stats">
+          <div className="stat-card"><span className="stat-icon teal"><Receipt size={20} /></span><div><strong>{myTxns.length}</strong><small>Transactions</small></div></div>
+          <div className="stat-card"><span className="stat-icon gold"><Clock size={20} /></span><div><strong>{myTxns.filter((t) => t.status !== 'receipt_generated').length}</strong><small>En cours</small></div></div>
+          <div className="stat-card"><span className="stat-icon blue"><CheckCircle2 size={20} /></span><div><strong>{myTxns.filter((t) => t.status === 'receipt_generated').length}</strong><small>Reçus générés</small></div></div>
+        </div>
       </section>
     </DashboardShell>
   )

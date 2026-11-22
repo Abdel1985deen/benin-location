@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   Bell, ChevronRight, FileText, Heart, Home, LayoutDashboard, LogOut,
-  Menu, MessageCircle, Plus, Settings, Truck, X,
+  Menu, MessageCircle, Plus, Receipt, Settings, Truck, X,
 } from 'lucide-react'
 import { useStore } from '../lib/store'
 
@@ -112,6 +112,7 @@ export const clientLinks: DashLink[] = [
   { id: 'favoris', label: 'Mes favoris', icon: Heart },
   { id: 'visites', label: 'Mes visites', icon: FileText },
   { id: 'contrats', label: 'Mes contrats', icon: LayoutDashboard },
+  { id: 'transactions', label: 'Suivi des transactions', icon: Receipt, to: '/transactions' },
   { id: 'demenagement', label: 'Déménagement', icon: Truck },
 ]
 
@@ -120,6 +121,7 @@ export const ownerLinks: DashLink[] = [
   { id: 'annonces', label: 'Mes annonces', icon: Home },
   { id: 'visites', label: 'Demandes de visite', icon: FileText },
   { id: 'contrats', label: 'Contrats', icon: LayoutDashboard },
+  { id: 'transactions', label: 'Suivi des transactions', icon: Receipt, to: '/transactions' },
   { id: 'publier', label: 'Publier une annonce', icon: Plus, to: '/publier' },
 ]
 
@@ -128,4 +130,6 @@ export const agencyLinks: DashLink[] = [
   { id: 'validation', label: 'Annonces à valider', icon: Home },
   { id: 'visites', label: 'Planning des visites', icon: FileText },
   { id: 'contrats', label: 'Contrats signés', icon: LayoutDashboard },
+  { id: 'transactions', label: 'Suivi des transactions', icon: Receipt, to: '/transactions' },
+  { id: 'diaspora', label: 'Projets diaspora', icon: Receipt, to: '/agence#diaspora' },
 ]

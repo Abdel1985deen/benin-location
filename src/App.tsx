@@ -17,6 +17,7 @@ import Publish from './pages/Publish'
 import Contract from './pages/Contract'
 import Moving from './pages/Moving'
 import Messages from './pages/Messages'
+import Transactions from './pages/Transactions'
 import ContractView from './pages/ContractView'
 import { IMG } from './lib/data'
 
@@ -96,6 +97,7 @@ export default function App() {
           <Route path="/contrat-signe/:contractId" element={<ContractView />} />
           <Route path="/demenagement/:contractId" element={<Moving />} />
           <Route path="/messages" element={<Messages />} />
+          <Route path="/transactions" element={<Transactions />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

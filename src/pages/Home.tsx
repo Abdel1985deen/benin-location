@@ -2,13 +2,13 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
   ArrowRight, BadgeCheck, Building2, Check, ChevronRight, Compass, FileSignature,
-  HeartHandshake, MapPin, MoveRight, Navigation, PackageCheck, Play, Search,
+  Globe2, HeartHandshake, MapPin, MoveRight, Navigation, PackageCheck, Play, Search,
   ShieldCheck, Sparkles, Star, Truck, UserRoundPlus,
 } from 'lucide-react'
 import BeninMap from '../components/BeninMap'
 import PropertyCard from '../components/PropertyCard'
 import { IMG, cityOptions } from '../lib/data'
-import { SITE_NAME, SITE_TAGLINE } from '../lib/site'
+import { LOGO_URL, SITE_NAME, SITE_TAGLINE } from '../lib/site'
 import { useStore } from '../lib/store'
 
 const budgets = [
@@ -59,7 +59,10 @@ export default function Home() {
         <div className="hero-glow hero-glow-two" />
         <div className="container hero-grid">
           <div className="hero-copy">
-            <div className="eyebrow"><span className="eyebrow-dot" /> {SITE_NAME} · {SITE_TAGLINE}</div>
+            <div className="hero-brand logo-chip">
+              <img src={LOGO_URL} alt="" width="30" height="30" />
+              <span>{SITE_NAME} · {SITE_TAGLINE}</span>
+            </div>
             <h1>Le bon logement au Bénin,<br /><em>sans détour.</em></h1>
             <p className="hero-lead">
               Louez partout au Bénin facilement et rapidement via votre position : annonces vérifiées,
@@ -309,6 +312,27 @@ export default function Home() {
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* DIASPORA */}
+      <section className="diaspora-cta">
+        <div className="container diaspora-inner">
+          <div className="diaspora-copy">
+            <span className="section-kicker"><Globe2 size={14} /> Vous êtes hors du Bénin ?</span>
+            <h2>Achetez un terrain et construisez en toute confiance.</h2>
+            <p>Confiez votre projet à l’agence ALLOCA BENIN : nous identifions le terrain, suivons les démarches et vous accompagnons jusqu’à la construction. Depuis l’étranger, une seule demande suffit.</p>
+            <ul>
+              <li><Check size={15} /> Terrains viabilisés et titres fonciers vérifiés</li>
+              <li><Check size={15} /> Échanges par WhatsApp, sans déplacement initial</li>
+              <li><Check size={15} /> Aucune pièce d’identité à téléverser pour commencer</li>
+            </ul>
+            <Link to="/connexion?mode=register&type=diaspora" className="btn btn-primary btn-lg">Je suis hors du Bénin : acheter un terrain et construire <ArrowRight size={18} /></Link>
+          </div>
+          <div className="diaspora-photo">
+            <img src={IMG.land1} alt="Parcelles de terrain au pied de l’Atacora au Bénin" loading="lazy" />
+            <div className="diaspora-photo-badge"><Globe2 size={18} /> Projet suivi par l’agence</div>
           </div>
         </div>
       </section>

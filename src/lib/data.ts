@@ -1,30 +1,34 @@
 import type { Listing, User } from '../types'
+import { PUBLIC_BASE } from './site'
 
-const photo = (id: string, w = 1200) =>
-  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=${w}&q=82`
+/**
+ * Photos réelles locales, stockées dans public/images/ et créditées dans CREDITS.md.
+ * Le préfixe PUBLIC_BASE garantit le bon fonctionnement sous /benin-location/.
+ */
+const local = (file: string) => `${PUBLIC_BASE}images/${file}`
 
 export const IMG = {
-  living1: photo('1600585154340-be6161a56a0c'),
-  living2: photo('1600607687939-ce8a6c25118c'),
-  living3: photo('1600566753190-17f0baa2a6c3'),
-  living4: photo('1600210492486-724fe5c67fb0'),
-  kitchen1: photo('1600607687920-4e2a09cf159d'),
-  bedroom1: photo('1600566753086-00f18fb6b3ea'),
-  bedroom2: photo('1600566752355-35792bedcfea'),
-  house1: photo('1600047509807-ba8f99d2cdde'),
-  house2: photo('1512917774080-9991f1c4c750'),
-  house3: photo('1583608205776-bfd35f0d9f83'),
-  terrace: photo('1600607688969-a5bfcd646154'),
-  land1: photo('1500382017468-9049fed747ef'),
-  land2: photo('1592595896551-12b371d546d5'),
-  city: photo('1519501025264-65ba15a82390'),
-  office: photo('1497366754035-f200968a6e72'),
-  panorama: photo('1600607687939-ce8a6c25118c', 2400),
-  panorama2: photo('1600210492486-724fe5c67fb0', 2400),
-  // Portraits libres de droits (Unsplash) pour les clients satisfaits.
-  person1: photo('1544005313-94ddf0286df2', 240),
-  person2: photo('1500648767791-00dcc994a43e', 240),
-  person3: photo('1534528741775-53994a69daeb', 240),
+  living1: local('benin-maison-kpassakanme.jpg'),
+  living2: local('benin-cour-familiale.jpg'),
+  living3: local('benin-habitat-terre-rouge.jpg'),
+  living4: local('benin-habitat-natitingou.jpg'),
+  kitchen1: local('benin-maisons-pilotis-ganvie.jpg'),
+  bedroom1: local('benin-cour-familiale.jpg'),
+  bedroom2: local('benin-maison-kpassakanme.jpg'),
+  house1: local('benin-habitat-terre-rouge.jpg'),
+  house2: local('benin-maison-kpassakanme.jpg'),
+  house3: local('benin-habitat-natitingou.jpg'),
+  terrace: local('benin-maisons-pilotis-ganvie.jpg'),
+  land1: local('benin-parcelles-atacora.jpg'),
+  land2: local('benin-parcelles-maraicheres-parakou.jpg'),
+  city: local('benin-cotonou-rue-animee.jpg'),
+  office: local('afrique-bureau-interieur.jpg'),
+  panorama: local('benin-parcelles-atacora.jpg'),
+  panorama2: local('benin-cotonou-rue.jpg'),
+  // Personnes souriantes avec téléphone (Wikimedia Commons, voir CREDITS.md).
+  person1: local('afrique-femme-sourire.jpg'),
+  person2: local('benin-telephone-reparation.jpg'),
+  person3: local('afrique-jeune-femme-sourire.jpg'),
 }
 
 export interface City {

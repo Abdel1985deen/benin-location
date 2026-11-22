@@ -3,8 +3,10 @@ import { seedListings, seedUsers } from './data'
 import { GEO_STORAGE_KEY, SITE_NAME, STORAGE_KEY } from './site'
 import { distanceKm, uid } from './utils'
 import type {
-  Contract, GeoPoint, Listing, ListingStatus, Message, MovingPlan, Notification, Role, User, VisitRequest,
+  Contract, DiasporaRequest, GeoPoint, Listing, ListingStatus, Message, MovingPlan, Notification,
+  Role, Transaction, TransactionStatus, User, VisitRequest,
 } from '../types'
+import { STATUS_LABELS, nextStatus } from './transactions'
 
 const KEY = STORAGE_KEY
 
@@ -13,6 +15,28 @@ export type GeoStatus = 'prompt' | 'locating' | 'granted' | 'denied' | 'unsuppor
 interface GeoState {
   point: GeoPoint | null
   status: GeoStatus
+}
+
+const daysAgo = (n: number) => new Date(Date.now() - n * 86400000).toISOString()
+
+/** Transactions de démonstration : aucun paiement réel n'est enregistré. */
+function demoTxn(
+  id: string, listingId: string, clientId: string, ownerId: string, rent: number,
+  status: TransactionStatus, ageDays: number, receiptNumber?: string,
+): Transaction {
+  const order: TransactionStatus[] = ['request', 'advance_paid', 'confirmed', 'rent_paid', 'receipt_generated']
+  const done = order.slice(0, order.indexOf(status) + 1)
+  return {
+    id, listingId, clientId, ownerId, agencyId: 'u-agency', rent, monthsAdvance: 3,
+    status, createdAt: daysAgo(ageDays), updatedAt: daysAgo(Math.max(0, ageDays - done.length)),
+    receiptNumber,
+    events: done.map((step, i) => ({
+      status: step,
+      label: STATUS_LABELS[step],
+      by: step === 'request' || step === 'confirmed' || step === 'rent_paid' ? clientId : ownerId,
+      at: daysAgo(Math.max(0, ageDays - i)),
+    })),
+  }
 }
 
 interface Persisted {
@@ -25,6 +49,8 @@ interface Persisted {
   favorites: Record<string, string[]>
   notifications: Notification[]
   messages: Message[]
+  diasporaRequests: DiasporaRequest[]
+  transactions: Transaction[]
 }
 
 const initialState: Persisted = {
@@ -111,6 +137,19 @@ const initialState: Persisted = {
       body: 'Bonjour Chantal, oui une place de parking est bien incluse et sécurisée.', createdAt: new Date(Date.now() - 4 * 3600000).toISOString(), read: false,
     },
   ],
+  diasporaRequests: [
+    {
+      id: 'd-demo1', name: 'Kofi Mensah', country: 'France', city: 'Abomey-Calavi',
+      budget: '10 000 000 – 20 000 000 FCFA', project: 'Maison individuelle 4 chambres',
+      whatsapp: '+33 6 12 34 56 78', email: 'kofi.mensah@example.com',
+      status: 'received', createdAt: daysAgo(2),
+    },
+  ],
+  transactions: [
+    demoTxn('t-demo1', 'l1', 'u-client', 'u-owner', 185000, 'receipt_generated', 6, 'REC-2026-0001'),
+    demoTxn('t-demo2', 'l3', 'u-client', 'u-owner', 95000, 'advance_paid', 2),
+    demoTxn('t-demo3', 'l2', 'u-client', 'u-owner2', 420000, 'request', 1),
+  ],
 }
 
 function load(): Persisted {
@@ -128,6 +167,8 @@ function load(): Persisted {
       favorites: parsed.favorites ?? initialState.favorites,
       notifications: parsed.notifications ?? initialState.notifications,
       messages: parsed.messages ?? initialState.messages,
+      diasporaRequests: parsed.diasporaRequests ?? initialState.diasporaRequests,
+      transactions: parsed.transactions ?? initialState.transactions,
     }
   } catch {
     return initialState
@@ -162,6 +203,11 @@ interface StoreValue extends Persisted {
   markAllRead: () => void
   sendMessage: (listingId: string, receiverId: string, body: string) => void
   markThreadRead: (listingId: string, otherId: string) => void
+  /** Demande d'accès diaspora transmise à l'agence (aucun document téléversé). */
+  submitDiasporaRequest: (input: Omit<DiasporaRequest, 'id' | 'createdAt' | 'status'>) => DiasporaRequest
+  /** Transactions simulées : aucune écriture bancaire ni secret de paiement. */
+  startTransaction: (listingId: string) => Transaction | null
+  advanceTransactionStep: (id: string) => void
 }
 
 const StoreContext = createContext<StoreValue | null>(null)
@@ -421,6 +467,89 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }))
     }
 
+    const submitDiasporaRequest = (input: Omit<DiasporaRequest, 'id' | 'createdAt' | 'status'>) => {
+      const request: DiasporaRequest = {
+        ...input, id: uid('d'), status: 'received', createdAt: new Date().toISOString(),
+      }
+      setState((s) => {
+        let next: Persisted = { ...s, diasporaRequests: [request, ...s.diasporaRequests] }
+        const agency = s.users.find((u) => u.role === 'agency')
+        if (agency) {
+          next = notifyState(next, agency.id, 'Nouveau projet diaspora',
+            `${request.name} souhaite acheter un terrain à ${request.city} (${request.country}).`,
+            'warning', '/agence#diaspora')
+        }
+        return next
+      })
+      return request
+    }
+
+    const startTransaction = (listingId: string): Transaction | null => {
+      const listing = state.listings.find((l) => l.id === listingId)
+      if (!currentUser || currentUser.role !== 'client' || !listing || listing.sale || listing.status === 'rented') return null
+      const existing = state.transactions.find((t) =>
+        t.listingId === listingId && t.clientId === currentUser.id && t.status !== 'receipt_generated')
+      if (existing) return existing
+
+      const now = new Date().toISOString()
+      const agency = state.users.find((u) => u.role === 'agency')
+      const transaction: Transaction = {
+        id: uid('t'), listingId, clientId: currentUser.id, ownerId: listing.ownerId,
+        agencyId: agency?.id, rent: listing.price, monthsAdvance: 3,
+        status: 'request', createdAt: now, updatedAt: now,
+        events: [{ status: 'request', label: STATUS_LABELS.request, by: currentUser.id, at: now }],
+      }
+      setState((s) => {
+        let next: Persisted = { ...s, transactions: [transaction, ...s.transactions] }
+        next = notifyState(next, listing.ownerId, 'Nouvelle demande de transaction',
+          `${currentUser.name} a envoyé une demande pour « ${listing.title} ».`, 'warning', '/proprietaire#transactions')
+        if (agency) next = notifyState(next, agency.id, 'Nouvelle demande de transaction',
+          `Demande client pour « ${listing.title} ».`, 'info', '/agence#transactions')
+        return next
+      })
+      return transaction
+    }
+
+    const advanceTransactionStep = (id: string) => {
+      const txn = state.transactions.find((t) => t.id === id)
+      if (!currentUser || !txn) return
+      const following = nextStatus(txn.status)
+      if (!following) return
+
+      const clientStep = following === 'advance_paid' || following === 'rent_paid'
+      const allowed = clientStep
+        ? currentUser.role === 'client' && currentUser.id === txn.clientId
+        : (currentUser.role === 'owner' && currentUser.id === txn.ownerId) || currentUser.role === 'agency'
+      if (!allowed) return
+
+      const now = new Date().toISOString()
+      const event = { status: following, label: STATUS_LABELS[following], by: currentUser.id, at: now }
+      const receiptNumber = following === 'receipt_generated'
+        ? `REC-${new Date().getFullYear()}-${id.slice(-5).toUpperCase()}`
+        : undefined
+
+      setState((s) => {
+        let next: Persisted = {
+          ...s,
+          transactions: s.transactions.map((t) => t.id === id ? {
+            ...t, status: following, updatedAt: now,
+            events: [...t.events, event],
+            ...(receiptNumber ? { receiptNumber } : {}),
+          } : t),
+        }
+        if (clientStep) {
+          next = notifyState(next, txn.ownerId, `Transaction : ${STATUS_LABELS[following].toLowerCase()}`,
+            `Le client a effectué l'étape « ${STATUS_LABELS[following]} » (simulation).`, 'info', '/proprietaire#transactions')
+          if (txn.agencyId) next = notifyState(next, txn.agencyId, 'Étape de transaction franchie',
+            STATUS_LABELS[following], 'info', '/agence#transactions')
+        } else {
+          next = notifyState(next, txn.clientId, `Transaction : ${STATUS_LABELS[following].toLowerCase()}`,
+            `Votre interlocuteur a validé l'étape « ${STATUS_LABELS[following]} ».`, 'success', '/client#transactions')
+        }
+        return next
+      })
+    }
+
     return {
       ...state,
       currentUser,
@@ -432,6 +561,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       register, login, demoLogin, logout, addListing, setListingStatus,
       toggleFavorite, addVisit, setVisitStatus, addContract, addMovingPlan, toggleMovingStep,
       notify, markAllRead, sendMessage, markThreadRead,
+      submitDiasporaRequest, startTransaction, advanceTransactionStep,
     }
   }, [state, geo, requestLocation, clearLocation, sortedListings])
 
