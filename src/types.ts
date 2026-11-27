@@ -12,6 +12,8 @@ export interface User {
   city: string
   createdAt: string
   agency?: string
+  /** NPI masqué : seuls les 3 derniers chiffres sont conservés (version de démonstration). */
+  npiMasque?: string
 }
 
 export interface Listing {

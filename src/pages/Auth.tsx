@@ -8,6 +8,7 @@ import { Logo } from '../components/Layout'
 import { IMG, cityOptions } from '../lib/data'
 import { SITE_NAME, SITE_TAGLINE } from '../lib/site'
 import { useStore } from '../lib/store'
+import { masquerNPI, normaliserTelephone, validerNPI } from '../lib/alloca-fiscal'
 import type { Role } from '../types'
 
 type AccessType = Role | 'diaspora'
@@ -37,7 +38,7 @@ export default function Auth() {
   const [role, setRole] = useState<AccessType>(
     params.get('type') === 'diaspora' ? 'diaspora' : (params.get('role') as AccessType) || 'client',
   )
-  const [form, setForm] = useState({ name: '', email: '', phone: '', city: 'Cotonou', password: '', agency: '' })
+  const [form, setForm] = useState({ name: '', email: '', phone: '', npi: '', city: 'Cotonou', password: '', agency: '' })
   const [diaspora, setDiaspora] = useState({
     name: '', country: 'France', city: 'Cotonou', budget: budgets[1], project: projects[1],
     whatsapp: '', email: '',
@@ -68,8 +69,12 @@ export default function Auth() {
     if (!form.name.trim() || !form.phone.trim() || form.password.length < 6) {
       return setError('Renseignez votre nom, votre téléphone et un mot de passe d’au moins 6 caractères.')
     }
+    const tel = normaliserTelephone(form.phone)
+    if (!tel.valide) return setError('Numéro de téléphone invalide. Exemple : +229 01 97 00 00 00.')
+    const npi = validerNPI(form.npi)
+    if (!npi.valide) return setError('NPI invalide. Vérifiez les chiffres saisis.')
     register({
-      name: form.name.trim(), email: form.email.trim(), phone: form.phone.trim(),
+      name: form.name.trim(), email: form.email.trim(), phone: tel.affichage ?? form.phone.trim(), npiMasque: masquerNPI(npi.npi),
       city: form.city, password: form.password, role,
       ...(role === 'agency' ? { agency: form.agency || form.name } : {}),
     })
@@ -175,7 +180,9 @@ export default function Auth() {
                   <>
                     <label><span>Nom complet</span><div className="input-icon"><UserRound size={17} /><input value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="Ex. Kofi Mensah" required /></div></label>
                     {role === 'agency' && <label><span>Nom de l'agence immobilière</span><div className="input-icon"><Building2 size={17} /><input value={form.agency} onChange={(e) => set('agency', e.target.value)} placeholder="Ex. Agence ALLOCA" /></div></label>}
-                    <label><span>Téléphone</span><div className="input-icon"><Phone size={17} /><input value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="+229 97 00 00 00" required /></div></label>
+                    <label><span>Téléphone</span><div className="input-icon"><Phone size={17} /><input value={form.phone} onChange={(e) => set('phone', e.target.value)} placeholder="+229 01 97 00 00 00" required /></div></label>
+                    <label><span>NPI (numéro personnel d’identification)</span><div className="input-icon"><ShieldCheck size={17} /><input value={form.npi} onChange={(e) => set('npi', e.target.value)} inputMode="numeric" placeholder="Ex. 1234567890" required /></div></label>
+                    <p className="form-note"><ShieldCheck size={13} /> Version de démonstration : utilisez un NPI fictif. Seuls les 3 derniers chiffres sont conservés.</p>
                     <label><span>Ville</span><div className="input-icon"><MapPin size={17} /><select value={form.city} onChange={(e) => set('city', e.target.value)}>{cityOptions.map((c) => <option key={c}>{c}</option>)}</select></div></label>
                   </>
                 )}
