@@ -7,6 +7,7 @@ import {
 import SignaturePad from '../components/SignaturePad'
 import { useStore } from '../lib/store'
 import { dateFR, money, todayISO } from '../lib/utils'
+import { calculerLocation, normaliserTelephone, verifierAvance } from '../lib/alloca-fiscal'
 
 const steps = ['Le bail', 'Le locataire', 'Le garant', 'Signature']
 
@@ -50,13 +51,25 @@ export default function Contract() {
 
   const set = (key: string, value: string) => setForm((f) => ({ ...f, [key]: value }))
 
+  const fiscal = calculerLocation({ loyerMensuel: listing.price, dureeMois: Number(form.duration) || 12 })
+
   const nextStep = () => {
     setError('')
+    if (step === 0) {
+      const avance = verifierAvance(listing.price, Number(form.deposit) || 0)
+      if (!avance.ok) return setError(`Le dépôt de garantie ne peut pas dépasser ${money(avance.maximum)} (2 mois de loyer, loi 2018-12, art. 9).`)
+    }
     if (step === 1 && (!form.firstName || !form.lastName || !form.phone || !form.email)) {
       return setError('Renseignez le nom, le téléphone et l’e-mail du locataire.')
     }
+    if (step === 1 && !normaliserTelephone(form.phone).valide) {
+      return setError('Numéro de téléphone du locataire invalide. Exemple : +229 01 97 00 00 00.')
+    }
     if (step === 2 && (!form.guarantorName || !form.guarantorPhone)) {
       return setError('Renseignez le garant et son téléphone.')
+    }
+    if (step === 2 && !normaliserTelephone(form.guarantorPhone).valide) {
+      return setError('Numéro de téléphone du garant invalide. Exemple : +229 01 97 00 00 00.')
     }
     setStep((s) => Math.min(3, s + 1))
   }
@@ -69,10 +82,10 @@ export default function Contract() {
       deposit: Number(form.deposit),
       tenant: {
         firstName: form.firstName, lastName: form.lastName, birthDate: form.birthDate,
-        birthPlace: form.birthPlace, nationality: form.nationality, phone: form.phone,
+        birthPlace: form.birthPlace, nationality: form.nationality, phone: normaliserTelephone(form.phone).affichage ?? form.phone,
         email: form.email, job: form.job,
       },
-      guarantor: { name: form.guarantorName, phone: form.guarantorPhone, relation: form.guarantorRelation },
+      guarantor: { name: form.guarantorName, phone: normaliserTelephone(form.guarantorPhone).affichage ?? form.guarantorPhone, relation: form.guarantorRelation },
       signature,
     })
     navigate(`/demenagement/${contract.id}`)
@@ -113,6 +126,7 @@ export default function Contract() {
               </div>
               <label className="field"><span>Dépôt de garantie (FCFA)</span><input type="number" value={form.deposit} onChange={(e) => set('deposit', e.target.value)} /></label>
               <div className="info-box"><ShieldCheck size={17} /> Le dépôt de garantie correspond généralement à un mois de loyer. Il sera consigné auprès de l'agence.</div>
+              {fiscal.ok && <div className="info-box"><ShieldCheck size={17} /> Taxes estimées : retenue de {money(fiscal.resume.retenueMensuelle)} par mois (loyer net {money(fiscal.resume.loyerNetMensuel)}) et droit de bail de {money(fiscal.resume.droitBail)}. Estimation à confirmer avec l’administration fiscale.</div>}
             </>}
 
             {step === 1 && <>
@@ -154,9 +168,11 @@ export default function Contract() {
                 <h3>CONTRAT DE LOCATION D'IMMEUBLE</h3>
                 <p><strong>Logement :</strong> {listing.title}, {listing.address}, {listing.city}</p>
                 <p><strong>Locataire :</strong> {form.firstName} {form.lastName} — {form.phone}</p>
+                {currentUser.npiMasque && <p><strong>NPI du locataire :</strong> {currentUser.npiMasque}</p>}
                 <p><strong>Propriétaire :</strong> {users.find((u) => u.id === listing.ownerId)?.name}</p>
                 <p><strong>Durée :</strong> {form.duration} mois à compter du {dateFR(form.startDate)}</p>
                 <p><strong>Loyer :</strong> {money(listing.price)} par mois · <strong>Dépôt :</strong> {money(Number(form.deposit))}</p>
+                {fiscal.ok && <p><strong>Retenue à la source (estimation) :</strong> {money(fiscal.resume.retenueMensuelle)} par mois — loyer net {money(fiscal.resume.loyerNetMensuel)}</p>}
                 <p><strong>Garant :</strong> {form.guarantorName} ({form.guarantorPhone})</p>
                 <p className="preview-legal">Le present contrat est établi en application des dispositions du Code civil et de la loi relative à la location immobilière en vigueur au Bénin. Le locataire s'engage à respecter les clauses du bail et à entretenir le bien.</p>
               </div>

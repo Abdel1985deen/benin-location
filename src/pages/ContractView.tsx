@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, CheckCircle2, FileSignature, MapPin, Printer, ShieldCheck, UserRound } from 'lucide-react'
 import { useStore } from '../lib/store'
 import { dateFR, money } from '../lib/utils'
+import { calculerLocation } from '../lib/alloca-fiscal'
 
 export default function ContractView() {
   const { contractId } = useParams()
@@ -14,6 +15,8 @@ export default function ContractView() {
   if (!contract) {
     return <div className="page not-found"><h1>Contrat introuvable</h1><Link to="/" className="btn btn-primary">Retour à l'accueil</Link></div>
   }
+
+  const fiscal = calculerLocation({ loyerMensuel: contract.rent, dureeMois: contract.duration })
 
   return (
     <div className="page contract-page">
@@ -47,7 +50,14 @@ export default function ContractView() {
               <p><strong>Profession :</strong> {contract.tenant.job || '—'}</p>
               <p><strong>Prise d'effet :</strong> {dateFR(contract.startDate)} · <strong>Durée :</strong> {contract.duration} mois</p>
               <p><strong>Loyer mensuel :</strong> {money(contract.rent)} · <strong>Dépôt de garantie :</strong> {money(contract.deposit)}</p>
+              {fiscal.ok && <>
+                <p><strong>Retenue à la source (estimation) :</strong> {money(fiscal.resume.retenueMensuelle)} par mois · <strong>Loyer net :</strong> {money(fiscal.resume.loyerNetMensuel)}</p>
+                <p><strong>Impôt sur les revenus fonciers (durée du bail) :</strong> {money(fiscal.resume.irfDuree)} · <strong>Droit de bail :</strong> {money(fiscal.resume.droitBail)}</p>
+              </>}
+              {client?.npiMasque && <p><strong>NPI du locataire :</strong> {client.npiMasque}</p>}
+              {owner?.npiMasque && <p><strong>NPI du bailleur :</strong> {owner.npiMasque}</p>}
               <p><strong>Garant :</strong> {contract.guarantor.name} ({contract.guarantor.phone}) {contract.guarantor.relation ? `— ${contract.guarantor.relation}` : ''}</p>
+              <p className="preview-legal">Enregistrement fiscal : conformément à la loi n° 2018-12, ce bail doit être enregistré auprès de l’administration fiscale, et le bailleur remet au locataire l’acte d’enregistrement dans les 30 jours. Les montants indiqués sont des estimations, dont les taux sont à confirmer avec la Direction générale des impôts.</p>
               <p className="preview-legal">Le présent contrat est établi en application des dispositions du Code civil et de la réglementation relative à la location immobilière en vigueur au Bénin. Le locataire s'engage à payer le loyer aux échéances convenues, à user paisiblement des lieux loués et à les entretenir en bon état. Le bailleur s'engage à délivrer un logement décent et à assurer la jouissance paisible du bien.</p>
             </div>
 
