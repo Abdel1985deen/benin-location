@@ -11,6 +11,7 @@
     "deploy": "npm run build && node node_modules/gh-pages/bin/gh-pages.js -d dist"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.119.2",
     "d3-geo": "^3.1.2",
     "leaflet": "^1.9.4",
     "lucide-react": "^1.76.0",
