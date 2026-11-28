@@ -46,7 +46,7 @@ export const CITIES: City[] = [
   { name: 'Bohicon', lat: 7.1967, lng: 2.0633, region: 'Zou' },
   { name: 'Abomey', lat: 7.1881, lng: 2.0169, region: 'Zou' },
   { name: 'Parakou', lat: 9.3406, lng: 2.7541, region: 'Borgou' },
-  { name: 'Djougou', lat: 9.7, lng: 1.1667, region: 'Donga' },
+  { name: 'Djougou', lat: 9.7, lng: 1.6667, region: 'Donga' },
   { name: 'Natitingou', lat: 10.2667, lng: 1.3667, region: 'Atacora' },
 ]
 

@@ -56,7 +56,7 @@ export const BENIN_CITIES: VilleCarte[] = [
   {
     "name": "Djougou",
     "region": "Donga",
-    "x": 158.2,
+    "x": 189.9,
     "y": 185.2
   },
   {
