@@ -8,6 +8,7 @@ import SignaturePad from '../components/SignaturePad'
 import { useStore } from '../lib/store'
 import { dateFR, money, todayISO } from '../lib/utils'
 import { calculerLocation, normaliserTelephone, verifierAvance } from '../lib/alloca-fiscal'
+import DetailCalcul from '../components/DetailCalcul'
 
 const steps = ['Le bail', 'Le locataire', 'Le garant', 'Signature']
 
@@ -127,6 +128,7 @@ export default function Contract() {
               <label className="field"><span>Dépôt de garantie (FCFA)</span><input type="number" value={form.deposit} onChange={(e) => set('deposit', e.target.value)} /></label>
               <div className="info-box"><ShieldCheck size={17} /> Le dépôt de garantie correspond généralement à un mois de loyer. Il sera consigné auprès de l'agence.</div>
               {fiscal.ok && <div className="info-box"><ShieldCheck size={17} /> Taxes estimées : retenue de {money(fiscal.resume.retenueMensuelle)} par mois (loyer net {money(fiscal.resume.loyerNetMensuel)}) et droit de bail de {money(fiscal.resume.droitBail)}. Estimation à confirmer avec l’administration fiscale.</div>}
+          {fiscal.ok ? <DetailCalcul fiscal={fiscal} /> : null}
             </>}
 
             {step === 1 && <>

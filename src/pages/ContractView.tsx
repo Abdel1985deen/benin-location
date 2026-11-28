@@ -3,6 +3,7 @@ import { ArrowLeft, CheckCircle2, FileSignature, MapPin, Printer, ShieldCheck, U
 import { useStore } from '../lib/store'
 import { dateFR, money } from '../lib/utils'
 import { calculerLocation } from '../lib/alloca-fiscal'
+import DetailCalcul from '../components/DetailCalcul'
 
 export default function ContractView() {
   const { contractId } = useParams()
@@ -52,6 +53,7 @@ export default function ContractView() {
               <p><strong>Loyer mensuel :</strong> {money(contract.rent)} · <strong>Dépôt de garantie :</strong> {money(contract.deposit)}</p>
               {fiscal.ok && <>
                 <p><strong>Retenue à la source (estimation) :</strong> {money(fiscal.resume.retenueMensuelle)} par mois · <strong>Loyer net :</strong> {money(fiscal.resume.loyerNetMensuel)}</p>
+          {fiscal.ok ? <DetailCalcul fiscal={fiscal} /> : null}
                 <p><strong>Impôt sur les revenus fonciers (durée du bail) :</strong> {money(fiscal.resume.irfDuree)} · <strong>Droit de bail :</strong> {money(fiscal.resume.droitBail)}</p>
               </>}
               {client?.npiMasque && <p><strong>NPI du locataire :</strong> {client.npiMasque}</p>}
