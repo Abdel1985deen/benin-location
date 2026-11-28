@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link, Route, Routes } from 'react-router-dom'
 import {
   ArrowRight, BadgeCheck, Building2, CalendarDays, Check, FileSignature,
@@ -5,6 +6,7 @@ import {
 } from 'lucide-react'
 import Layout from './components/Layout'
 import ScrollToTop from './components/ScrollToTop'
+import Entry from './pages/Entry'
 import Home from './pages/Home'
 import Explore from './pages/Explore'
 import Lands from './pages/Lands'
@@ -78,7 +80,18 @@ function NotFound() {
   return <div className="page not-found"><span className="not-found-code">404</span><h1>Cette page n'existe pas</h1><p>Le lien est peut-être obsolète. Revenez à l'accueil pour continuer votre recherche.</p><Link to="/" className="btn btn-primary">Retour à l'accueil <ArrowRight size={16} /></Link></div>
 }
 
+const CLE_ENTREE = 'alloca-entree'
+
 export default function App() {
+  const [entre, setEntre] = useState(() => {
+    try { return sessionStorage.getItem(CLE_ENTREE) === '1' } catch { return false }
+  })
+  const entrer = () => {
+    try { sessionStorage.setItem(CLE_ENTREE, '1') } catch { /* navigation privée */ }
+    setEntre(true)
+  }
+  if (!entre) return <Entry onEnter={entrer} />
+
   return (
     <>
       <ScrollToTop />
