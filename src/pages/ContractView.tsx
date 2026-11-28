@@ -53,7 +53,7 @@ export default function ContractView() {
               <p><strong>Loyer mensuel :</strong> {money(contract.rent)} · <strong>Dépôt de garantie :</strong> {money(contract.deposit)}</p>
               {fiscal.ok && <>
                 <p><strong>Retenue à la source (estimation) :</strong> {money(fiscal.resume.retenueMensuelle)} par mois · <strong>Loyer net :</strong> {money(fiscal.resume.loyerNetMensuel)}</p>
-          {fiscal.ok ? <DetailCalcul fiscal={fiscal} /> : null}
+          {fiscal.ok && listing?.type !== 'Terrain' ? <DetailCalcul fiscal={fiscal} /> : null}
                 <p><strong>Impôt sur les revenus fonciers (durée du bail) :</strong> {money(fiscal.resume.irfDuree)} · <strong>Droit de bail :</strong> {money(fiscal.resume.droitBail)}</p>
               </>}
               {client?.npiMasque && <p><strong>NPI du locataire :</strong> {client.npiMasque}</p>}
